@@ -1,96 +1,61 @@
-import type {JsonPrimitive, UserInfoResponse} from "openid-client";
+/**
+ * Configuration for the frontend authentication monitor.
+ */
+export type AuthMonitorConfig = {
+  /**
+   * The URL to poll to check the user's authentication status.
+   * A 2xx response means "authenticated", while a 4xx/5xx response means "unauthenticated".
+   */
+  statusUrl: string;
 
-type UserStatusBase<Data extends Record<string, any> = Record<string, any>> = {
+  /**
+   * The URL to redirect the user to when they need to log in.
+   */
+  loginUrl: string;
+};
+
+/**
+ * Represents the user's authentication status from the frontend's perspective.
+ */
+export type UserStatus = {
     loggedIn: boolean;
-    accessExpires: number;
-    refreshExpires: number;
-    backend?: Data;
 }
 
-export type UserStatus<Data extends Record<string, any> = Record<string, any>> = UserStatusBase<Data> & {
-    userInfo: UserInfoResponse | undefined;
-}
-
-export type UserStatusImmerSafe<Data extends Record<string, any> = Record<string, any>> = UserStatusBase<Data> & {
-    userInfo: {
-        sub: string,
-        [claim: string]: JsonPrimitive,
-    } | undefined;
-}
-
-// export type UserStatus<Data extends Record<string, any> = Record<string, any>> = Data & {
-//     loggedIn: boolean;
-//     userInfo: UserInfoResponse | undefined;
-//     accessExpires: number;
-//     refreshExpires: number;
-//     backend?: Data;
-// }
-
-export enum TokenType {
-    ACCESS,
-    REFRESH,
-}
-
-export enum SilentLoginEvent {
+/**
+ * Events used for cross-window communication during the login flow.
+ * This allows the main application window to detect when a login is successful
+ * in a separate login window.
+ */
+export enum LoginWindowEvent {
+    /**
+     * Sent by the main window to the login window to confirm it's alive.
+     */
     CHILD_ALIVE = "CHILD_ALIVE",
+    /**
+     * Sent by the login window to the main window to confirm it's ready to listen.
+     */
     LOGIN_LISTENER_ALIVE = "LOGIN_LISTENER_ALIVE",
+    /**
+     * Sent by the main window when it detects the user needs to log in.
+     */
     LOGIN_REQUIRED = "LOGIN_REQUIRED",
+    /**
+     * Sent by the login window back to the main window upon successful authentication.
+     */
     LOGIN_SUCCESS = "LOGIN_SUCCESS",
+    /**
+     * Sent by the login window back to the main window if an error occurs.
+     */
     LOGIN_ERROR = "LOGIN_ERROR",
 }
 
-export enum SilentLoginTypes {
-    FULL = "FULL",
-    PARTIAL = "PARTIAL",
-    NONE = "NONE",
-}
+/**
+ * The message structure for postMessage communication between the main and login windows.
+ */
+export type LoginWindowMessage = {
+    event: LoginWindowEvent,
+};
 
-export enum SilentLogoutTypes {
-    FETCH = "FETCH",
-    NONE = "NONE",
-}
-
-export type UserStatusWrapped = {
-    md5: string,
-    payload: UserStatus,
-    timestamp: number,
-}
-
-export type SilentLoginMessage = {
-    event: SilentLoginEvent,
-    token?: string,
-    data?: UserStatusWrapped,
-}
-
-export type CustomRouteUrl = {
-    _prefix?: string;
-    loginPage?: string;
-    loginPost?: string;
-    loginListener?: string;
-    logoutPage?: string;
-    logoutPost?: string;
-    callback?: string;
-    logoutCallback?: string;
-    publicKeys?: string;
-    backChannelLogout?: string;
-    userStatus?: string;
-    publicDir?: string;
-}
-
-export enum RouteEnum {
-    // String enums MUST match key found in CustomRouteUrl type
-    LOGIN_PAGE = "loginPage",
-    LOGIN_POST = "loginPost",
-    LOGIN_LISTENER = "loginListener",
-    LOGOUT_PAGE = "logoutPage",
-    LOGOUT_POST = "logoutPost",
-    CALLBACK = "callback",
-    LOGOUT_CALLBACK = "logoutCallback",
-    PUBLIC_KEYS = "publicKeys",
-    BACK_CHANNEL_LOGOUT = "backChannelLogout",
-    USER_STATUS = "userStatus",
-    PUBLIC_DIR = "publicDir",
-}
 
 type SuccessResponse = {
     success: true;

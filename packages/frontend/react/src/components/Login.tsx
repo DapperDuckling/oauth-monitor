@@ -1,9 +1,9 @@
-import {useKeycloakConnector} from "../use-keycloak-connector.js";
+import {useAuthMonitor} from "../use-auth-monitor.js";
 import {ButtonExpressionLevel, Overlay, type OverlayProps} from "./Overlay.js";
 import {AuthProps} from "../types.js";
 
 export const Login = ({children, reactConfig}: AuthProps) => {
-    const [kccContext] = useKeycloakConnector();
+    const [kccContext] = useAuthMonitor();
     
     const {ui} = kccContext;
 
@@ -22,7 +22,7 @@ export const Login = ({children, reactConfig}: AuthProps) => {
         subMsg: ui.loginError ? "Failed to communicate with server" : !ui.showMustLoginOverlay && ui.lengthyLogin ? "this is taking longer than expected" : undefined,
         button: {
             label: "Login",
-            onClick: () => kccContext.kccClient?.handleLogin(kccContext.hasAuthenticatedOnce),
+            onClick: () => kccContext.kccClient?.handleLogin(),
             newWindow: kccContext.hasAuthenticatedOnce,
             expressionLevel: expressionLevel,
         },
@@ -38,4 +38,3 @@ export const Login = ({children, reactConfig}: AuthProps) => {
         </Overlay>
     );
 }
-
