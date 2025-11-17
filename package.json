@@ -1,11 +1,9 @@
 {
-  "name": "@dapperduckling/keycloak-connector",
+  "name": "@dapperduckling/oauth-monitor",
   "private": true,
   "type": "module",
   "workspaces": [
     "packages/common",
-    "packages/backend/server",
-    "packages/backend/*",
     "packages/frontend/client",
     "packages/frontend/react",
     "packages/frontend/*",
@@ -13,14 +11,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DapperDuckling/keycloak-connector.git"
+    "url": "git+https://github.com/DapperDuckling/oauth-monitor.git"
   },
   "author": "DapperDuckling Dev LLC",
   "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/DapperDuckling/keycloak-connector/issues"
+    "url": "https://github.com/DapperDuckling/oauth-monitor/issues"
   },
-  "homepage": "https://github.com/DapperDuckling/keycloak-connector#readme",
+  "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "build": "npm run build --workspaces",
     "publish": "lerna publish --no-private",

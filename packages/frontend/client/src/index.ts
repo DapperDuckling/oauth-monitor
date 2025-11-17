@@ -1,3 +1,2 @@
-
-export * from "./keycloak-connector-client.js";
+export * from "./oauth-monitor-client.js";
 export * from "./types.js";

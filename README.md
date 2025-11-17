@@ -1,24 +1,24 @@
-[![Documentation](https://github.com/DapperDuckling/keycloak-connector/actions/workflows/deploy.yml/badge.svg)](https://github.com/DapperDuckling/keycloak-connector/actions/workflows/deploy.yml)
+[![Documentation](https://github.com/DapperDuckling/oauth-monitor/actions/workflows/deploy.yml/badge.svg)](https://github.com/DapperDuckling/oauth-monitor/actions/workflows/deploy.yml)
 
-# keycloak-connector
+# oauth-monitor
 
 An opinionated series of libraries for Node.js applications and frontend clients to interface with keycloak.
 
 Minimum Keycloak version: 21.1.0
 
-[//]: # (### keycloak-connector-client)
-[//]: # (`npm install @dapperducklingdev/keycloak-connector-client`)
+[//]: # (### oauth-monitor-client)
+[//]: # (`npm install @dapperducklingdev/oauth-monitor-client`)
 
-### keycloak-connector-server
-`npm install @dapperduckling/keycloak-connector-server`
+### oauth-monitor-server
+`npm install @dapperduckling/oauth-monitor-server`
 
 ## Plugins
-### keycloak-connector-group-auth-plugin
-`npm install @dapperduckling/keycloak-connector-group-auth-plugin`
+### oauth-monitor-group-auth-plugin
+`npm install @dapperduckling/oauth-monitor-group-auth-plugin`
 
-### keycloak-connector-cluster-redis
-`npm install @dapperduckling/keycloak-connector-cluster-redis`
+### oauth-monitor-cluster-redis
+`npm install @dapperduckling/oauth-monitor-cluster-redis`
 
 
 ## Dev getting started
-`npm i && npm run build -w @dapperduckling/keycloak-connector-common`
+`npm i && npm run build -w @dapperduckling/oauth-monitor-common`

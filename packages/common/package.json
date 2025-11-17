@@ -1,5 +1,5 @@
 {
-  "name": "@dapperduckling/keycloak-connector-common",
+  "name": "@dapperduckling/oauth-monitor-common",
   "version": "3.0.2",
   "description": "Common library code. Not intended for individual installation.",
   "main": "./dist/index.js",
@@ -8,9 +8,9 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/DapperDuckling/keycloak-connector/issues"
+    "url": "https://github.com/DapperDuckling/oauth-monitor/issues"
   },
-  "homepage": "https://github.com/DapperDuckling/keycloak-connector#readme",
+  "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "clean": "rimraf ./dist/",
     "build": "npm run clean && tsc",

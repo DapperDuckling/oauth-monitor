@@ -9,4 +9,4 @@
 
 ## Reporting a Vulnerability
 
-Please report vulnerabilities through this repository's private reporting page --> [Report a vulnerability](https://github.com/DapperDuckling/keycloak-connector/security/advisories/new)
+Please report vulnerabilities through this repository's private reporting page --> [Report a vulnerability](https://github.com/DapperDuckling/oauth-monitor/security/advisories/new)

@@ -1,11 +1,11 @@
-import {useKeycloakConnector} from "../use-keycloak-connector.js";
+import {useOauthMonitor} from "../use-oauth-monitor.js";
 import {ButtonExpressionLevel, Overlay, type OverlayProps} from "./Overlay.js";
 import {AuthProps} from "../types.js";
 
 export const Login = ({children, reactConfig}: AuthProps) => {
-    const [kccContext] = useKeycloakConnector();
+    const [omcContext] = useOauthMonitor();
     
-    const {ui} = kccContext;
+    const {ui} = omcContext;
 
     let expressionLevel: ButtonExpressionLevel;
 
@@ -22,15 +22,15 @@ export const Login = ({children, reactConfig}: AuthProps) => {
         subMsg: ui.loginError ? "Failed to communicate with server" : !ui.showMustLoginOverlay && ui.lengthyLogin ? "this is taking longer than expected" : undefined,
         button: {
             label: "Login",
-            onClick: () => kccContext.kccClient?.handleLogin(kccContext.hasAuthenticatedOnce),
-            newWindow: kccContext.hasAuthenticatedOnce,
+            onClick: () => omcContext.omcClient?.handleLogin(omcContext.hasAuthenticatedOnce),
+            newWindow: omcContext.hasAuthenticatedOnce,
             expressionLevel: expressionLevel,
         },
-        userCanClose: !!(kccContext.hasAuthenticatedOnce || reactConfig?.deferredStart),
+        userCanClose: !!(omcContext.hasAuthenticatedOnce || reactConfig?.deferredStart),
     }
 
     // Start the login listener if login will be with a new window
-    if (kccContext.hasAuthenticatedOnce) kccContext.kccClient?.prepareToHandleNewWindowLogin();
+    if (omcContext.hasAuthenticatedOnce) omcContext.omcClient?.prepareToHandleNewWindowLogin();
 
     return (
         <Overlay {...overlayProps}>

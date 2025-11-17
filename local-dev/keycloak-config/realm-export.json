@@ -26,7 +26,7 @@
   "enabled": true,
   "clients": [
     {
-      "clientId": "keycloak-connector-dev",
+      "clientId": "oauth-monitor-dev",
       "enabled": true,
       "protocol": "openid-connect",
       "redirectUris": ["http://localhost:3005/*"],

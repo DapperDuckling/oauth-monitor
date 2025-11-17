@@ -1,13 +1,13 @@
-import {KeycloakConnectorClient} from "@dapperduckling/keycloak-connector-client";
-import {ReactConfig} from "./components/KeycloakConnectorProvider.js";
+import {OauthMonitorClient} from "@dapperduckling/oauth-monitor-client";
+import {ReactConfig} from "./components/OauthMonitorProvider.js";
 import {ReactNode} from "react";
-import type {UserStatusImmerSafe} from "@dapperduckling/keycloak-connector-common";
+import type {UserStatusImmerSafe} from "@dapperduckling/oauth-monitor-common";
 
 export interface AuthProps {
     children: ReactNode;
     reactConfig?: ReactConfig;
 }
-export interface KeycloakConnectorState {
+export interface OauthMonitorState {
     userStatus: UserStatusImmerSafe;
     hasAuthenticatedOnce: boolean;
     ui: {
@@ -22,10 +22,10 @@ export interface KeycloakConnectorState {
     }
 }
 
-export enum KccDispatchType {
+export enum OmcDispatchType {
     DESTROY_CLIENT = "DESTROY_CLIENT",
-    SET_KCC_CLIENT = "SET_KCC_CLIENT",
-    KCC_CLIENT_EVENT = "KCC_CLIENT_EVENT",
+    SET_OMC_CLIENT = "SET_OMC_CLIENT",
+    OMC_CLIENT_EVENT = "OMC_CLIENT_EVENT",
     LENGTHY_LOGIN = "LENGTHY_LOGIN",
     SHOW_LOGIN = "SHOW_LOGIN",
     SHOW_LOGOUT = "SHOW_LOGOUT",
@@ -33,14 +33,14 @@ export enum KccDispatchType {
     HIDE_DIALOG = "HIDE_DIALOG",
 }
 
-export type KeycloakConnectorStateActions =
-    | { type: KccDispatchType.SET_KCC_CLIENT; payload: KeycloakConnectorClient; }
-    | { type: KccDispatchType.KCC_CLIENT_EVENT; payload: Event | CustomEvent<UserStatusImmerSafe>; }
+export type OauthMonitorStateActions =
+    | { type: OmcDispatchType.SET_OMC_CLIENT; payload: OauthMonitorClient; }
+    | { type: OmcDispatchType.OMC_CLIENT_EVENT; payload: Event | CustomEvent<UserStatusImmerSafe>; }
     | { type:
-            KccDispatchType.DESTROY_CLIENT |
-            KccDispatchType.LENGTHY_LOGIN |
-            KccDispatchType.SHOW_LOGIN |
-            KccDispatchType.SHOW_LOGOUT |
-            KccDispatchType.EXECUTING_LOGOUT |
-            KccDispatchType.HIDE_DIALOG
+            OmcDispatchType.DESTROY_CLIENT |
+            OmcDispatchType.LENGTHY_LOGIN |
+            OmcDispatchType.SHOW_LOGIN |
+            OmcDispatchType.SHOW_LOGOUT |
+            OmcDispatchType.EXECUTING_LOGOUT |
+            OmcDispatchType.HIDE_DIALOG
     }

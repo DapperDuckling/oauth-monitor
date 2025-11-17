@@ -1,5 +1,5 @@
 {
-  "name": "@dapperduckling/keycloak-connector-client",
+  "name": "@dapperduckling/oauth-monitor-client",
   "version": "3.0.3",
   "description": "An opinionated library securing frontend applications without all the fuss",
   "keywords": [
@@ -16,9 +16,9 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/DapperDuckling/keycloak-connector/issues"
+    "url": "https://github.com/DapperDuckling/oauth-monitor/issues"
   },
-  "homepage": "https://github.com/DapperDuckling/keycloak-connector#readme",
+  "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "clean": "rimraf ./dist/",
     "build": "npm run clean && tsc",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@dapperduckling/keycloak-connector-common": "file:../../common",
+    "@dapperduckling/oauth-monitor-common": "file:../../common",
     "js-cookie": "^3.0.5",
     "typia": "^5.2.6"
   },

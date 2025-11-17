@@ -1,17 +1,17 @@
-import {useKeycloakConnector} from "../use-keycloak-connector.js";
+import {useOauthMonitor} from "../use-oauth-monitor.js";
 import {Overlay} from "./Overlay.js";
-import {AuthProps, KccDispatchType} from "../types.js";
+import {AuthProps, OmcDispatchType} from "../types.js";
 
 export const Logout = ({children}: AuthProps) => {
-    const [kccContext, kccDispatch] = useKeycloakConnector();
+    const [omcContext, omcDispatch] = useOauthMonitor();
 
     const overlayProps = {
         mainMsg: "Are you sure you want to log out?",
         button: {
             label: "Logout",
             onClick: () => {
-                kccDispatch({type: KccDispatchType.EXECUTING_LOGOUT});
-                kccContext.kccClient?.handleLogout();
+                omcDispatch({type: OmcDispatchType.EXECUTING_LOGOUT});
+                omcContext.omcClient?.handleLogout();
             },
         },
         userCanClose: true,

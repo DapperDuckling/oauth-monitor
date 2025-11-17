@@ -1,8 +1,8 @@
 import {Box, Button, Dialog, IconButton, Stack, Typography} from "@mui/material";
 import type {ReactNode} from "react";
 import {OpenInNew, Close} from '@mui/icons-material';
-import { useKeycloakConnector } from "../use-keycloak-connector.js";
-import {KccDispatchType} from "../types.js";
+import { useOauthMonitor } from "../use-oauth-monitor.js";
+import {OmcDispatchType} from "../types.js";
 
 export type ButtonExpressionLevel = "subdued" | "regular" | "expressed";
 
@@ -24,7 +24,7 @@ export const Overlay = (props: OverlayProps) => {
     // Update the expression level if not set
     props.button.expressionLevel ??= "expressed";
 
-    const [kccContext, kccDispatch] = useKeycloakConnector();
+    const [omcContext, omcDispatch] = useOauthMonitor();
 
     return (
         <Dialog
@@ -42,8 +42,8 @@ export const Overlay = (props: OverlayProps) => {
                     <IconButton
                         aria-label="close"
                         onClick={() => {
-                            kccContext.kccClient?.abortBackgroundLogins();
-                            kccDispatch({type: KccDispatchType.HIDE_DIALOG});
+                            omcContext.omcClient?.abortBackgroundLogins();
+                            omcDispatch({type: OmcDispatchType.HIDE_DIALOG});
                         }}
                         sx={{
                             position: 'absolute',

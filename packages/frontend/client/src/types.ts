@@ -1,13 +1,9 @@
-import type {CustomRouteUrl} from "@dapperduckling/keycloak-connector-common";
+import type {CustomRouteUrl} from "@dapperduckling/oauth-monitor-common";
 import type {Logger} from "pino";
-import {STORAGE_PREFIX_COMBINED} from "@dapperduckling/keycloak-connector-common";
+import {STORAGE_PREFIX_COMBINED} from "@dapperduckling/oauth-monitor-common";
 
 export enum ClientEvent {
     INVALID_TOKENS = "INVALID_TOKENS",
-    START_SILENT_LOGIN = "START_SILENT_LOGIN",
-
-    LOGIN_ERROR = "LOGIN_ERROR",
-    LOGOUT_SUCCESS = "LOGOUT_SUCCESS",
     USER_STATUS_UPDATED = "USER_STATUS_UPDATED",
 }
 
@@ -29,19 +25,13 @@ export interface ClientConfig {
      */
     routePaths?: CustomRouteUrl;
 
-    /**
-     * @description Disables ability for the client to authenticate with Keycloak silently
-     * @default false
-     */
-    disableSilentLogin?: boolean;
-
     /** Pass a logger to the client. This is useful for debugging and logging.
      *
      * @example
      * import pino from "pino";
      * const logger = pino();
      *
-     * const client = new KCClient({logger});
+     * const client = new OMClient({logger});
      */
     logger?: Logger;
 
@@ -54,19 +44,11 @@ export interface ClientConfig {
 
     /**
      * @desc    The amount of time in minutes the client should attempt to refresh the access token in order
-     *          to keep it from expiring (NOTE: KCC server MUST be configured with a time at or greater).
+     *          to keep it from expiring (NOTE: OMC server MUST be configured with a time at or greater).
      *          Set false to disable.
      * @default 2.5 minutes
      */
     eagerRefreshTime?: number | false;
-
-    /**
-     * @desc    An endpoint to hit when a user's session information is updated
-     * @default undefined
-     * @example "https://xyz123.abc/random-page"
-     */
-    alertEndpoint?: string;
-    alertEndpointOpts?: RequestInit;
 }
 
 export const LocalStorage = Object.freeze({

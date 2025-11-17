@@ -1,5 +1,5 @@
 {
-  "name": "@dapperduckling/keycloak-connector-react",
+  "name": "@dapperduckling/oauth-monitor-react",
   "version": "3.0.3",
   "description": "An opinionated library for securing react apps without all the fuss",
   "keywords": [
@@ -17,12 +17,12 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DapperDuckling/keycloak-connector.git"
+    "url": "https://github.com/DapperDuckling/oauth-monitor.git"
   },
   "bugs": {
-    "url": "https://github.com/DapperDuckling/keycloak-connector/issues"
+    "url": "https://github.com/DapperDuckling/oauth-monitor/issues"
   },
-  "homepage": "https://github.com/DapperDuckling/keycloak-connector#readme",
+  "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "clean": "rimraf ./dist/",
     "build": "npm run clean && npm run build:esm && npm run build:cjs",
@@ -33,8 +33,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@dapperduckling/keycloak-connector-client": "file:../client",
-    "@dapperduckling/keycloak-connector-common": "file:../../common",
+    "@dapperduckling/oauth-monitor-client": "file:../client",
+    "@dapperduckling/oauth-monitor-common": "file:../../common",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.19",

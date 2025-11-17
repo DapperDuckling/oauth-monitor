@@ -1,19 +1,19 @@
 import {type ReactNode, useEffect} from 'react';
 import {
-    type ClientConfig, ClientEvent, KeycloakConnectorClient,
-} from "@dapperduckling/keycloak-connector-client";
+    type ClientConfig, ClientEvent, OauthMonitorClient,
+} from "@dapperduckling/oauth-monitor-client";
 import {Login} from "./Login.js";
 import {
     InitialContext,
-    KeycloakConnectorContext,
-    KeycloakConnectorDispatchContext,
-} from "../keycloak-connector-context.js";
+    OauthMonitorContext,
+    OauthMonitorDispatchContext,
+} from "../oauth-monitor-context.js";
 import {reducer} from "../reducer.js";
 import {useImmerReducer} from "use-immer";
 import {createTheme, ThemeProvider} from "@mui/material";
 import {Logout} from "./Logout.js";
-import {KccDispatchType} from "../types.js";
-import {EventListenerFunction, type UserStatus} from "@dapperduckling/keycloak-connector-common";
+import {OmcDispatchType} from "../types.js";
+import {EventListenerFunction, type UserStatus} from "@dapperduckling/oauth-monitor-common";
 
 export type ReactConfig = {
     disableAuthComponents?: boolean,
@@ -62,7 +62,7 @@ const theme = createTheme({
     },
 });
 
-export const KeycloakConnectorProvider = ({children, config}: ConnectorProviderProps) => {
+export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps) => {
 
     // Grab the initial context
     const initialContext = structuredClone(InitialContext);
@@ -71,26 +71,26 @@ export const KeycloakConnectorProvider = ({children, config}: ConnectorProviderP
     if (config.react?.deferredStart) initialContext.ui.showLoginOverlay = false;
 
     // Initialize the reducer
-    const [kccContext, kccDispatch] = useImmerReducer(reducer, initialContext);
+    const [omcContext, omcDispatch] = useImmerReducer(reducer, initialContext);
 
     useEffect(() => {
         // Safety check for non-typescript instances
         if (config === undefined) {
-            throw new Error("No config provided to KeycloakConnectorProvider");
+            throw new Error("No config provided to OauthMonitorProvider");
         }
 
         // Instantiate the keycloak connector client
-        // const kccClient = keycloakConnectorClient(config.client);
-        const kccClient = new KeycloakConnectorClient(config.client);
+        // const omcClient = OauthMonitorClient(config.client);
+        const omcClient = new OauthMonitorClient(config.client);
 
         // Store the client in the context
-        kccDispatch({type: KccDispatchType.SET_KCC_CLIENT, payload: kccClient});
+        omcDispatch({type: OmcDispatchType.SET_OMC_CLIENT, payload: omcClient});
 
         // Attach handler
         let lengthyLoginTimeout: undefined | number = undefined;
 
         // Add event listener to pass events down to components
-        kccClient.addEventListener('*', (clientEvent, payload) => {
+        omcClient.addEventListener('*', (clientEvent, payload) => {
 
             // console.debug(`KCP received event: ${clientEvent}`);
 
@@ -98,13 +98,13 @@ export const KeycloakConnectorProvider = ({children, config}: ConnectorProviderP
             const event = new CustomEvent(clientEvent, {detail: payload});
 
             // Dispatch the event
-            kccDispatch({type: KccDispatchType.KCC_CLIENT_EVENT, payload: event});
+            omcDispatch({type: OmcDispatchType.OMC_CLIENT_EVENT, payload: event});
 
             // Capture silent login events and set a timer to flag them as lengthy
             if (event.type === ClientEvent.START_SILENT_LOGIN) {
                 clearTimeout(lengthyLoginTimeout);
                 lengthyLoginTimeout = window.setTimeout(() => {
-                    kccDispatch({type: KccDispatchType.LENGTHY_LOGIN});
+                    omcDispatch({type: OmcDispatchType.LENGTHY_LOGIN});
                 }, 7000);
             }
 
@@ -117,29 +117,29 @@ export const KeycloakConnectorProvider = ({children, config}: ConnectorProviderP
         });
 
         // Add global event listener from user
-        if (config.react?.globalEventListener) kccClient.addEventListener('*', config.react?.globalEventListener);
+        if (config.react?.globalEventListener) omcClient.addEventListener('*', config.react?.globalEventListener);
 
         // Initialize the connector
-        if (config.react?.deferredStart !== true) kccClient.start();
+        if (config.react?.deferredStart !== true) omcClient.start();
 
         return () => {
-            kccClient.destroy();
-            kccDispatch({type: KccDispatchType.DESTROY_CLIENT});
+            omcClient.destroy();
+            omcDispatch({type: OmcDispatchType.DESTROY_CLIENT});
         }
     }, []);
 
     return (
-        <KeycloakConnectorContext.Provider value={kccContext}>
-            <KeycloakConnectorDispatchContext.Provider value={kccDispatch}>
+        <OauthMonitorContext.Provider value={omcContext}>
+            <OauthMonitorDispatchContext.Provider value={omcDispatch}>
                 {config.react?.disableAuthComponents !== true &&
                     <ThemeProvider theme={theme}>
-                        {kccContext.ui.showLoginOverlay && <Login {...config.react}>{config.react?.loginModalChildren}</Login>}
-                        {kccContext.ui.showLogoutOverlay && <Logout {...config.react}>{config.react?.logoutModalChildren}</Logout>}
+                        {omcContext.ui.showLoginOverlay && <Login {...config.react}>{config.react?.loginModalChildren}</Login>}
+                        {omcContext.ui.showLogoutOverlay && <Logout {...config.react}>{config.react?.logoutModalChildren}</Logout>}
                     </ThemeProvider>
                 }
-                {kccContext.hasAuthenticatedOnce && children}
-            </KeycloakConnectorDispatchContext.Provider>
-        </KeycloakConnectorContext.Provider>
+                {omcContext.hasAuthenticatedOnce && children}
+            </OauthMonitorDispatchContext.Provider>
+        </OauthMonitorContext.Provider>
     );
 };
 

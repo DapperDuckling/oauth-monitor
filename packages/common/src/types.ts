@@ -1,53 +1,8 @@
-import type {JsonPrimitive, UserInfoResponse} from "openid-client";
 
-type UserStatusBase<Data extends Record<string, any> = Record<string, any>> = {
+export type UserStatus = {
     loggedIn: boolean;
     accessExpires: number;
     refreshExpires: number;
-    backend?: Data;
-}
-
-export type UserStatus<Data extends Record<string, any> = Record<string, any>> = UserStatusBase<Data> & {
-    userInfo: UserInfoResponse | undefined;
-}
-
-export type UserStatusImmerSafe<Data extends Record<string, any> = Record<string, any>> = UserStatusBase<Data> & {
-    userInfo: {
-        sub: string,
-        [claim: string]: JsonPrimitive,
-    } | undefined;
-}
-
-// export type UserStatus<Data extends Record<string, any> = Record<string, any>> = Data & {
-//     loggedIn: boolean;
-//     userInfo: UserInfoResponse | undefined;
-//     accessExpires: number;
-//     refreshExpires: number;
-//     backend?: Data;
-// }
-
-export enum TokenType {
-    ACCESS,
-    REFRESH,
-}
-
-export enum SilentLoginEvent {
-    CHILD_ALIVE = "CHILD_ALIVE",
-    LOGIN_LISTENER_ALIVE = "LOGIN_LISTENER_ALIVE",
-    LOGIN_REQUIRED = "LOGIN_REQUIRED",
-    LOGIN_SUCCESS = "LOGIN_SUCCESS",
-    LOGIN_ERROR = "LOGIN_ERROR",
-}
-
-export enum SilentLoginTypes {
-    FULL = "FULL",
-    PARTIAL = "PARTIAL",
-    NONE = "NONE",
-}
-
-export enum SilentLogoutTypes {
-    FETCH = "FETCH",
-    NONE = "NONE",
 }
 
 export type UserStatusWrapped = {
@@ -56,50 +11,12 @@ export type UserStatusWrapped = {
     timestamp: number,
 }
 
-export type SilentLoginMessage = {
-    event: SilentLoginEvent,
-    token?: string,
-    data?: UserStatusWrapped,
-}
-
 export type CustomRouteUrl = {
     _prefix?: string;
-    loginPage?: string;
-    loginPost?: string;
-    loginListener?: string;
-    logoutPage?: string;
-    logoutPost?: string;
-    callback?: string;
-    logoutCallback?: string;
-    publicKeys?: string;
-    backChannelLogout?: string;
     userStatus?: string;
-    publicDir?: string;
 }
 
 export enum RouteEnum {
     // String enums MUST match key found in CustomRouteUrl type
-    LOGIN_PAGE = "loginPage",
-    LOGIN_POST = "loginPost",
-    LOGIN_LISTENER = "loginListener",
-    LOGOUT_PAGE = "logoutPage",
-    LOGOUT_POST = "logoutPost",
-    CALLBACK = "callback",
-    LOGOUT_CALLBACK = "logoutCallback",
-    PUBLIC_KEYS = "publicKeys",
-    BACK_CHANNEL_LOGOUT = "backChannelLogout",
     USER_STATUS = "userStatus",
-    PUBLIC_DIR = "publicDir",
 }
-
-type SuccessResponse = {
-    success: true;
-}
-
-type ErrorResponse = {
-    success: false;
-    error: string;
-    errorData?: unknown;
-}
-
-export type GeneralResponse = SuccessResponse | ErrorResponse;

@@ -1,5 +1,0 @@
-{
-  "entryPoints": ["src/index.ts"],
-  "extends": ["../../../typedoc.base.json"],
-  "name": "group-auth-plugin"
-}

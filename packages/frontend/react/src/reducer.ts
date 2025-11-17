@@ -1,20 +1,20 @@
 import type {ImmerReducer} from "use-immer";
-import type {KeycloakConnectorContextProps} from "./keycloak-connector-context.js";
-import {InitialContext} from "./keycloak-connector-context.js";
-import type {UserStatusImmerSafe} from "@dapperduckling/keycloak-connector-common";
-import {ClientEvent} from "@dapperduckling/keycloak-connector-client";
+import type {OauthMonitorContextProps} from "./oauth-monitor-context.js";
+import {InitialContext} from "./oauth-monitor-context.js";
+import type {UserStatusImmerSafe} from "@dapperduckling/oauth-monitor-common";
+import {ClientEvent} from "@dapperduckling/oauth-monitor-client";
 import {Draft} from "immer";
-import {KccDispatchType, KeycloakConnectorStateActions} from "./types.js";
+import {OmcDispatchType, OauthMonitorStateActions} from "./types.js";
 
-type ImmerReducerType = ImmerReducer<KeycloakConnectorContextProps, KeycloakConnectorStateActions>;
+type ImmerReducerType = ImmerReducer<OauthMonitorContextProps, OauthMonitorStateActions>;
 
-const resetUiHelperStates = (draft: Draft<KeycloakConnectorContextProps>) => {
+const resetUiHelperStates = (draft: Draft<OauthMonitorContextProps>) => {
     draft.ui.silentLoginInitiated = draft.ui.lengthyLogin = draft.ui.loginError = false;
 }
 
-const keycloakConnectorClientEventHandler: ImmerReducerType = (draft, action) => {
+const OauthMonitorClientEventHandler: ImmerReducerType = (draft, action) => {
     // Ensure the correct payload was passed
-    if (action.type !== KccDispatchType.KCC_CLIENT_EVENT) return;
+    if (action.type !== OmcDispatchType.OMC_CLIENT_EVENT) return;
 
     const eventType = action.payload.type as ClientEvent;
     switch (eventType) {
@@ -49,30 +49,30 @@ const keycloakConnectorClientEventHandler: ImmerReducerType = (draft, action) =>
 
 export const reducer: ImmerReducerType = (draft, action) => {
     switch (action.type) {
-        case KccDispatchType.KCC_CLIENT_EVENT:
-            return keycloakConnectorClientEventHandler(draft, action);
-        case KccDispatchType.SET_KCC_CLIENT:
-            draft.kccClient = action.payload;
+        case OmcDispatchType.OMC_CLIENT_EVENT:
+            return OauthMonitorClientEventHandler(draft, action);
+        case OmcDispatchType.SET_OMC_CLIENT:
+            draft.omcClient = action.payload;
             break;
-        case KccDispatchType.LENGTHY_LOGIN:
+        case OmcDispatchType.LENGTHY_LOGIN:
             draft.ui.lengthyLogin = true;
             break;
-        case KccDispatchType.EXECUTING_LOGOUT:
+        case OmcDispatchType.EXECUTING_LOGOUT:
             draft.ui.showLogoutOverlay = true;
             draft.ui.executingLogout = true;
             break;
-        case KccDispatchType.SHOW_LOGIN:
+        case OmcDispatchType.SHOW_LOGIN:
             draft.ui.showLoginOverlay = true;
             break;
-        case KccDispatchType.SHOW_LOGOUT:
+        case OmcDispatchType.SHOW_LOGOUT:
             draft.ui.showLogoutOverlay = true;
             break;
-        case KccDispatchType.HIDE_DIALOG:
+        case OmcDispatchType.HIDE_DIALOG:
             resetUiHelperStates(draft);
             draft.ui.showLoginOverlay = false;
             draft.ui.showLogoutOverlay = false;
             break;
-        case KccDispatchType.DESTROY_CLIENT:
+        case OmcDispatchType.DESTROY_CLIENT:
             return structuredClone(InitialContext);
     }
 
