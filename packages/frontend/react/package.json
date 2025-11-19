@@ -58,7 +58,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "ccdf8ea97b4d914b74c1e8a8b2d0fb85d1e358f0",
+  "gitHead": "ec54188adf51a9dd34e9548aa76d0d291cf06561",
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
