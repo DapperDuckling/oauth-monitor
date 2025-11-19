@@ -1,6 +1,6 @@
 {
   "name": "@dapperduckling/oauth-monitor-common",
-  "version": "3.0.2",
+  "version": "1.0.0",
   "description": "Common library code. Not intended for individual installation.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

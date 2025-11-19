@@ -1,6 +1,6 @@
 {
   "name": "@dapperduckling/oauth-monitor-client",
-  "version": "3.0.3",
+  "version": "1.0.0",
   "description": "An opinionated library securing frontend applications without all the fuss",
   "keywords": [
     "keycloak",
