@@ -5,9 +5,7 @@
   "workspaces": [
     "packages/common",
     "packages/frontend/client",
-    "packages/frontend/react",
-    "packages/frontend/*",
-    "docs"
+    "packages/frontend/react"
   ],
   "repository": {
     "type": "git",
