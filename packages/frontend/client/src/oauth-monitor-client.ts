@@ -38,10 +38,10 @@ export class OauthMonitorClient {
         }
 
         // Listen for events from the storage api
-        window.addEventListener("storage", this.handleStorageEvent);
-
-        // Setup an on window focus listener
-        window.addEventListener("focus", this.handleOnFocus);
+        if (typeof window !== 'undefined') {
+            window.addEventListener("storage", this.handleStorageEvent);
+            window.addEventListener("focus", this.handleOnFocus);
+        }
     }
 
     public start = () => {
@@ -63,6 +63,7 @@ export class OauthMonitorClient {
     public removeEventListener = (...args: Parameters<EventListener<ClientEvent>['removeEventListener']>) => this.eventListener.removeEventListener(...args);
 
     private clearUserStatus = () => {
+        if (typeof localStorage === 'undefined') return;
         localStorage.removeItem(LocalStorage.USER_STATUS);
     }
 
@@ -71,6 +72,7 @@ export class OauthMonitorClient {
     }
 
     private storeUserStatus = (data: UserStatusWrapped | undefined) => {
+        if (typeof localStorage === 'undefined') return;
         try {
             if (data === undefined) return;
 
@@ -110,10 +112,12 @@ export class OauthMonitorClient {
     }
 
     private handleOnFocus = () => {
+        if (typeof window === 'undefined') return;
         this.authCheckNoWait();
     }
 
     handleLogin = (newWindow?: boolean) => {
+        if (typeof window === 'undefined' || typeof self === 'undefined') return;
         // Abort the auth check
         this.abortAuthCheck();
 
@@ -129,6 +133,7 @@ export class OauthMonitorClient {
     }
 
     handleLogout = () => {
+        if (typeof self === 'undefined') return;
         // Clear the local storage
         this.clearUserStatus();
 
@@ -186,10 +191,12 @@ export class OauthMonitorClient {
         if (userStatus.accessExpires < 0) return;
 
         // Set up the expiration listener
-        this.expirationWatchSignal = window.setTimeout(async () => {
-            console.debug(`Access token expiration within ${this.config.eagerRefreshTime} minutes, eagerly fetching new token`);
-            await this.authCheck(true);
-        }, Math.max(secondsRemaining * 1000, 15000));
+        if (typeof window !== 'undefined') {
+            this.expirationWatchSignal = window.setTimeout(async () => {
+                console.debug(`Access token expiration within ${this.config.eagerRefreshTime} minutes, eagerly fetching new token`);
+                await this.authCheck(true);
+            }, Math.max(secondsRemaining * 1000, 15000));
+        }
 
         // Record the timeout's target timestamp
         this.expirationWatchTimestamp = userStatus.accessExpires;
@@ -260,8 +267,10 @@ export class OauthMonitorClient {
 
     public destroy = () => {
         this.abortAuthCheck();
-        window.removeEventListener("storage", this.handleStorageEvent);
-        window.removeEventListener("focus", this.handleOnFocus);
+        if (typeof window !== 'undefined') {
+            window.removeEventListener("storage", this.handleStorageEvent);
+            window.removeEventListener("focus", this.handleOnFocus);
+        }
         this.isDestroyed = true;
     }
 
@@ -302,6 +311,7 @@ export class OauthMonitorClient {
     });
 
     private static getStoredUserStatusWrapped = () => {
+        if (typeof localStorage === 'undefined') return undefined;
         // Grab the user status from local storage
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const userStatusWrapped = JSON.parse(

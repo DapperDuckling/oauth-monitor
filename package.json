@@ -23,7 +23,8 @@
     "publish": "lerna publish --no-private",
     "list-versions": "lerna ls -l",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "yalc:publish": "npm run yalc:publish --workspaces --if-present"
   },
   "devDependencies": {
     "@tsconfig/node18": "^2.0.0",

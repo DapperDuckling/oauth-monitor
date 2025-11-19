@@ -4,7 +4,7 @@
 
     const config = {
         client: {
-            apiServerOrigin: "", // Use relative paths for local SvelteKit API routes
+            apiServerOrigin: "http://localhost:3000",
             fastInitialAuthCheck: true,
             eagerRefreshTime: 0.5
         },
