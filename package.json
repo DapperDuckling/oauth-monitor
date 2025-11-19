@@ -5,7 +5,8 @@
   "workspaces": [
     "packages/common",
     "packages/frontend/client",
-    "packages/frontend/react"
+    "packages/frontend/react",
+    "packages/frontend/svelte"
   ],
   "repository": {
     "type": "git",

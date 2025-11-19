@@ -1,0 +1,21 @@
+<script lang="ts">
+    import { OauthMonitor } from '@dapperduckling/oauth-monitor-svelte';
+    import ControlPanel from '$lib/ControlPanel.svelte';
+
+    const config = {
+        client: {
+            apiServerOrigin: "", // Use relative paths for local SvelteKit API routes
+            fastInitialAuthCheck: true,
+            eagerRefreshTime: 0.5
+        },
+        svelte: {}
+    };
+</script>
+
+<div class="min-h-screen flex flex-col items-center justify-center p-8">
+    <h1 class="text-3xl font-bold mb-8 text-[#79b4c3]">Svelte OAuth Monitor Example</h1>
+
+    <OauthMonitor {config}>
+        <ControlPanel />
+    </OauthMonitor>
+</div>
