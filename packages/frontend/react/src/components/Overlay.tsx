@@ -42,7 +42,7 @@ export const Overlay = (props: OverlayProps) => {
                     <IconButton
                         aria-label="close"
                         onClick={() => {
-                            omcContext.omcClient?.abortBackgroundLogins();
+                            omcContext.omcClient?.abortAuthCheck();
                             omcDispatch({type: OmcDispatchType.HIDE_DIALOG});
                         }}
                         sx={{

@@ -13,7 +13,8 @@ import {useImmerReducer} from "use-immer";
 import {createTheme, ThemeProvider} from "@mui/material";
 import {Logout} from "./Logout.js";
 import {OmcDispatchType} from "../types.js";
-import {EventListenerFunction, type UserStatus} from "@dapperduckling/oauth-monitor-common";
+import {type EventListenerFunction, type UserStatus} from "@dapperduckling/oauth-monitor-common";
+import {FloatingPill} from "./FloatingPill.js";
 
 export type ReactConfig = {
     disableAuthComponents?: boolean,
@@ -100,8 +101,8 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
             // Dispatch the event
             omcDispatch({type: OmcDispatchType.OMC_CLIENT_EVENT, payload: event});
 
-            // Capture silent login events and set a timer to flag them as lengthy
-            if (event.type === ClientEvent.START_SILENT_LOGIN) {
+            // Capture auth check events and set a timer to flag them as lengthy
+            if (clientEvent === ClientEvent.START_AUTH_CHECK) {
                 clearTimeout(lengthyLoginTimeout);
                 lengthyLoginTimeout = window.setTimeout(() => {
                     omcDispatch({type: OmcDispatchType.LENGTHY_LOGIN});
@@ -109,8 +110,8 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
             }
 
             // Clear timeout on login or error
-            if ((event.type === ClientEvent.USER_STATUS_UPDATED && (payload as UserStatus)['loggedIn']) ||
-                event.type === ClientEvent.LOGIN_ERROR
+            if ((clientEvent === ClientEvent.USER_STATUS_UPDATED && (payload as UserStatus)['loggedIn']) ||
+                clientEvent === ClientEvent.LOGIN_ERROR
             ) {
                 clearTimeout(lengthyLoginTimeout);
             }
@@ -134,13 +135,12 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
                 {config.react?.disableAuthComponents !== true &&
                     <ThemeProvider theme={theme}>
                         {omcContext.ui.showLoginOverlay && <Login {...config.react}>{config.react?.loginModalChildren}</Login>}
+                        {!omcContext.ui.showLoginOverlay && !omcContext.userStatus.loggedIn && <FloatingPill/>}
                         {omcContext.ui.showLogoutOverlay && <Logout {...config.react}>{config.react?.logoutModalChildren}</Logout>}
                     </ThemeProvider>
                 }
-                {omcContext.hasAuthenticatedOnce && children}
+                {children}
             </OauthMonitorDispatchContext.Provider>
         </OauthMonitorContext.Provider>
     );
 };
-
-

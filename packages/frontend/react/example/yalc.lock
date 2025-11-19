@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "packages": {
+    "@dapperduckling/oauth-monitor-react": {
+      "signature": "5c7cb4b2162e9ccf161837468124b141",
+      "file": true
+    },
+    "@dapperduckling/oauth-monitor-client": {
+      "signature": "20a10d3a6cc9d7d15a2439ab5884490c",
+      "file": true
+    },
+    "@dapperduckling/oauth-monitor-common": {
+      "signature": "3771b7b53db4a9766d58bfd3ba108b46",
+      "file": true
+    }
+  }
+}

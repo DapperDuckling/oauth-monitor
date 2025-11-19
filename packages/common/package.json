@@ -18,7 +18,6 @@
     "yalc:publish": "yalc publish --push"
   },
   "devDependencies": {
-    "openid-client": "^6.4.1",
     "typescript": "^5.0.4"
   },
   "files": [

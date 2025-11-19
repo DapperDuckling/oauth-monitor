@@ -1,13 +1,12 @@
-import {ClientConfig, ClientEvent, LocalStorage} from "./types";
+import {ClientConfig, ClientEvent, LocalStorage} from "./types.js";
 import {
-    EventListener,
-    SilentLoginEvent,
-    type SilentLoginMessage,
+    EventListener, TokenType,
     URL,
     type UserStatus,
-    type UserStatusWrapped
+    type UserStatusWrapped, isObject, getRoutePath, RouteEnum
 } from "@dapperduckling/oauth-monitor-common";
 import {is} from "typia";
+import {setImmediate} from "./utils.js";
 
 
 export class OauthMonitorClient {
@@ -18,7 +17,11 @@ export class OauthMonitorClient {
     private eventListener = new EventListener<ClientEvent>();
 
     private config: ClientConfig;
-    private acceptableOrigins: string[];
+    private started = false;
+    private isAuthCheckedWithServer = false;
+    // private isAuthChecking = false;
+    private authCheckAbort: AbortController['abort'] | null = null;
+    private isDestroyed = false;
     private expirationWatchTimestamp: null | number = null;
     private expirationWatchSignal: null | number = null;
 
@@ -34,33 +37,64 @@ export class OauthMonitorClient {
             this.config.logger = this.config.logger.child({"Source": "OauthMonitorClient"})
         }
 
-        // Build the list of acceptable origins
-        this.acceptableOrigins = [self.origin];
-
-        // Validate the api server origin input
-        if (config.apiServerOrigin !== undefined) {
-            // Check for a valid URL
-            if (!URL.canParse(config.apiServerOrigin)) {
-                throw new Error("Invalid apiServerOrigin specified, cannot parse with `URL`");
-            }
-
-            // Calculate the origin from the provided "origin"
-            const calculatedOrigin = new URL(config.apiServerOrigin).origin;
-
-            // Check if the api server origin is an actual origin
-            if (new URL(config.apiServerOrigin).origin !== config.apiServerOrigin) {
-                throw new Error(`Invalid apiServerOrigin specified, calculated origin ${calculatedOrigin} does not match input ${config.apiServerOrigin}.`);
-            }
-
-            // Add the api server origin to the acceptable origins
-            this.acceptableOrigins.push(config.apiServerOrigin);
-        }
-
         // Listen for events from the storage api
         window.addEventListener("storage", this.handleStorageEvent);
 
         // Setup an on window focus listener
         window.addEventListener("focus", this.handleOnFocus);
+    }
+
+    public start = () => {
+        // Check to see if the client is already started
+        if (this.started) {
+            this.config.logger?.error(`Already started, cannot start again`);
+        }
+
+        // Set the auth to happen on the next tick
+        this.authCheckNextTick();
+
+        // Set the started flag
+        this.started = true;
+    }
+
+    public isStarted = () => this.started;
+
+    public addEventListener = (...args: Parameters<EventListener<ClientEvent>['addEventListener']>) => this.eventListener.addEventListener(...args);
+    public removeEventListener = (...args: Parameters<EventListener<ClientEvent>['removeEventListener']>) => this.eventListener.removeEventListener(...args);
+
+    private clearUserStatus = () => {
+        localStorage.removeItem(LocalStorage.USER_STATUS);
+    }
+
+    public abortAuthCheck = () => {
+        this.authCheckAbort?.();
+    }
+
+    private storeUserStatus = (data: UserStatusWrapped | undefined) => {
+        try {
+            if (data === undefined) return;
+
+            // Grab the existing user status from local storage
+            const existingUserStatus = JSON.parse(
+                localStorage.getItem(LocalStorage.USER_STATUS) ?? "{}"
+            ) as UserStatusWrapped;
+
+            // Don't update the local storage if this data has the same checksum or is older
+            // const hasDifferentHash = existingUserStatus["checksum"] === undefined || existingUserStatus["checksum"] !== data.checksum;
+            const isMoreRecentData =
+                existingUserStatus["timestamp"] === undefined ||
+                existingUserStatus["timestamp"] < data.timestamp;
+            if (isMoreRecentData) {
+                // Store the new user status in local storage
+                localStorage.setItem(LocalStorage.USER_STATUS, JSON.stringify(data));
+
+                // Call the local storage update for this instance
+                this.handleUpdatedUserStatus();
+            }
+        } catch (e) {
+            this.config.logger?.error(`Could not update localStorage with user data`);
+            if (isObject(e)) this.config.logger?.error(e);
+        }
     }
 
     private handleStorageEvent = (event: StorageEvent) => {
@@ -79,6 +113,32 @@ export class OauthMonitorClient {
         this.authCheckNoWait();
     }
 
+    handleLogin = (newWindow?: boolean) => {
+        // Abort the auth check
+        this.abortAuthCheck();
+
+        // Build the login url
+        const loginUrl = new URL(getRoutePath(RouteEnum.LOGIN_PAGE, this.config.routePaths), this.config.apiServerOrigin);
+
+        // Check if we should open a new window
+        if (newWindow) {
+            window.open(loginUrl.toString(), "_blank");
+        } else {
+            self.location.href = loginUrl.toString();
+        }
+    }
+
+    handleLogout = () => {
+        // Clear the local storage
+        this.clearUserStatus();
+
+        // Build the logout url
+        const logoutUrl = new URL(getRoutePath(RouteEnum.LOGOUT_PAGE, this.config.routePaths), this.config.apiServerOrigin);
+
+        // Redirect to the logout page
+        self.location.href = logoutUrl.toString();
+    }
+
     private handleUpdatedUserStatus = () => {
 
         // Grab the user status from local storage
@@ -88,10 +148,10 @@ export class OauthMonitorClient {
         if (userStatusWrapped === undefined) return;
 
         // Cancel any background requests
-        this.abortBackgroundLogins();
+        this.abortAuthCheck();
 
         // Check to see if the hash is not different
-        if (this.userStatusHash === userStatusWrapped["md5"]) return;
+        if (this.userStatusHash === userStatusWrapped["checksum"]) return;
 
         // Grab the user status payload
         const userStatus = userStatusWrapped["payload"];
@@ -100,13 +160,12 @@ export class OauthMonitorClient {
         if (userStatus === undefined) return;
 
         // Update the user status hash
-        this.userStatusHash = userStatusWrapped["md5"];
+        this.userStatusHash = userStatusWrapped["checksum"];
 
         // Set up the access token expiration function
         this.setupExpirationListener(userStatus);
 
         this.eventListener.dispatchEvent<UserStatus>(ClientEvent.USER_STATUS_UPDATED, userStatus);
-
     }
 
     private setupExpirationListener = (userStatus: UserStatus) => {
@@ -142,29 +201,105 @@ export class OauthMonitorClient {
         // Execute the synchronous auth check portion
         if (!force && this.authCheckNoWait() && this.userStatusHash !== undefined) return;
 
-        // Prevent multiple async auth checks from occurring
-        if (this.isAuthChecking) {
+        // Dispatch the start auth check event
+        this.eventListener.dispatchEvent(ClientEvent.START_AUTH_CHECK);
+
+        // Check if auth check already running
+        if (this.authCheckAbort !== null) {
             console.debug(`Is already auth checking, will not make another attempt`);
             return;
         }
 
-        // Set the flag
-        this.isAuthChecking = true;
+        // Prepare abort controller
+        const abortController = new AbortController();
+        this.authCheckAbort = () => abortController.abort();
+        const userStatusUrl = `${this.config.apiServerOrigin}${getRoutePath(RouteEnum.USER_STATUS, this.config.routePaths)}`;
 
-        // Dispatch the start silent login event
-        this.eventListener.dispatchEvent(ClientEvent.START_SILENT_LOGIN);
+        try {
+            // Check the user status
+            const response = await fetch(userStatusUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "credentials": "include"
+                },
+                signal: abortController.signal,
+            });
 
-        // Attempt to update the auth with the refresh token
-        if (await this.refreshAccessWithRefresh()) {
-            this.isAuthChecking = false;
+            // Handle 401, 403, or other non-2xx errors
+            if (!response.ok) {
+                // noinspection ExceptionCaughtLocallyJS
+                this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const userStatusWrapped = await response.json();
+
+            if (!is<UserStatusWrapped>(userStatusWrapped)) {
+                this.config.logger?.error("Validation Failed:", userStatusWrapped);
+                // noinspection ExceptionCaughtLocallyJS
+                throw new Error("Response validation failed: Invalid UserStatus shape");
+            }
+
+            // Advise finished auth check
+            this.eventListener.dispatchEvent<UserStatus>(ClientEvent.END_AUTH_CHECK, userStatusWrapped.payload);
+
+            // Update the auth checked with server flag
             this.isAuthCheckedWithServer = true;
-            return;
-        }
 
-        // Attempt to reauthenticate silently
-        this.silentLogin();
+            // Update the user status and interface
+            this.storeUserStatus(userStatusWrapped);
+
+        } catch (error) {
+            this.eventListener.dispatchEvent(ClientEvent.LOGIN_ERROR);
+        } finally {
+            // Clear the abort function
+            this.authCheckAbort = null;
+        }
     }
 
+    public destroy = () => {
+        this.abortAuthCheck();
+        window.removeEventListener("storage", this.handleStorageEvent);
+        window.removeEventListener("focus", this.handleOnFocus);
+        this.isDestroyed = true;
+    }
+
+    public authCheckNoWait = () => {
+
+        // Check for a valid access token
+        if (OauthMonitorClient.isTokenCurrent(TokenType.ACCESS)) {
+            // Initial check if the user status has not been populated
+            if (this.userStatusHash === undefined && this.config.fastInitialAuthCheck) {
+                // Attempt to update the user status with cached data immediately
+                this.handleUpdatedUserStatus();
+
+                // Perform a background check of the login status
+                this.authCheckNextTick(true);
+            }
+
+            return true;
+        }
+
+        // Check for a valid refresh token
+        const validRefreshToken = OauthMonitorClient.isTokenCurrent(TokenType.REFRESH);
+
+        // Perform background login
+        this.authCheckNextTick(true);
+
+        // Check for an invalid refresh token as well
+        if (!validRefreshToken) {
+            // Send an invalid tokens event
+            this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
+        }
+
+        return false;
+    }
+
+    private authCheckNextTick = (force?: boolean) => setImmediate(async () => {
+        if (this.isDestroyed) return;
+        await this.authCheck(force);
+    });
 
     private static getStoredUserStatusWrapped = () => {
         // Grab the user status from local storage
@@ -177,9 +312,40 @@ export class OauthMonitorClient {
         return is<UserStatusWrapped>(userStatusWrapped) ? userStatusWrapped : undefined;
     }
 
+    static isTokenCurrent = (type: TokenType) => {
+
+        // Grab the user status from local storage
+        const userStatusWrapped = OauthMonitorClient.getStoredUserStatusWrapped();
+
+        // Check for no result
+        if (userStatusWrapped === undefined) return;
+
+        let expirationTimestamp;
+
+        switch (type) {
+            case TokenType.ACCESS:
+                expirationTimestamp = userStatusWrapped.payload.accessExpires;
+
+                // Ensure logged in
+                if (!userStatusWrapped.payload.loggedIn) return false;
+
+                break;
+            case TokenType.REFRESH:
+                expirationTimestamp = userStatusWrapped.payload.refreshExpires;
+                break;
+            default:
+                throw new Error("Invalid token type");
+        }
+
+        // Check for an invalid number
+        if (Number.isNaN(expirationTimestamp)) return false;
+
+        return (Date.now() < expirationTimestamp * 1000);
+    }
+
     static instance = (config: ClientConfig): OauthMonitorClient => {
         // Check if the client has already been instantiated
-        if (this.omcClient) {
+        if (this.omcClient && !this.omcClient.isDestroyed) {
             // Ensure the config hasn't changed
             if (this.omcClient.config !== config) {
                 throw new Error("OauthMonitorClient already instantiated, cannot re-instantiate with a different config.");

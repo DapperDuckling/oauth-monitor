@@ -1,15 +1,12 @@
 import {OauthMonitorClient} from "@dapperduckling/oauth-monitor-client";
-import {ReactConfig} from "./components/OauthMonitorProvider.js";
 import {ReactNode} from "react";
-import type {UserStatusImmerSafe} from "@dapperduckling/oauth-monitor-common";
+import type {UserStatus} from "@dapperduckling/oauth-monitor-common";
 
 export interface AuthProps {
     children: ReactNode;
-    reactConfig?: ReactConfig;
 }
 export interface OauthMonitorState {
-    userStatus: UserStatusImmerSafe;
-    hasAuthenticatedOnce: boolean;
+    userStatus: UserStatus;
     ui: {
         showLoginOverlay: boolean;
         showMustLoginOverlay: boolean;
@@ -35,7 +32,7 @@ export enum OmcDispatchType {
 
 export type OauthMonitorStateActions =
     | { type: OmcDispatchType.SET_OMC_CLIENT; payload: OauthMonitorClient; }
-    | { type: OmcDispatchType.OMC_CLIENT_EVENT; payload: Event | CustomEvent<UserStatusImmerSafe>; }
+    | { type: OmcDispatchType.OMC_CLIENT_EVENT; payload: Event | CustomEvent<UserStatus>; }
     | { type:
             OmcDispatchType.DESTROY_CLIENT |
             OmcDispatchType.LENGTHY_LOGIN |

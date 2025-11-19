@@ -1,7 +1,7 @@
 import type {ImmerReducer} from "use-immer";
 import type {OauthMonitorContextProps} from "./oauth-monitor-context.js";
 import {InitialContext} from "./oauth-monitor-context.js";
-import type {UserStatusImmerSafe} from "@dapperduckling/oauth-monitor-common";
+import type {UserStatus} from "@dapperduckling/oauth-monitor-common";
 import {ClientEvent} from "@dapperduckling/oauth-monitor-client";
 import {Draft} from "immer";
 import {OmcDispatchType, OauthMonitorStateActions} from "./types.js";
@@ -17,30 +17,31 @@ const OauthMonitorClientEventHandler: ImmerReducerType = (draft, action) => {
     if (action.type !== OmcDispatchType.OMC_CLIENT_EVENT) return;
 
     const eventType = action.payload.type as ClientEvent;
+    const payload = action.payload as CustomEvent<UserStatus>;
+
     switch (eventType) {
         case ClientEvent.INVALID_TOKENS:
             draft.ui.showLoginOverlay = true;
             draft.ui.hasInvalidTokens = true;
             break;
-        case ClientEvent.START_SILENT_LOGIN:
+        case ClientEvent.START_AUTH_CHECK:
             draft.ui.silentLoginInitiated = true;
+            draft.ui.showMustLoginOverlay = false;
             draft.ui.loginError = false;
             break;
         case ClientEvent.LOGIN_ERROR:
             draft.ui.loginError = true;
             draft.ui.silentLoginInitiated = false;
             break;
-        case ClientEvent.LOGOUT_SUCCESS:
-            // Reset the state
-            return structuredClone(InitialContext);
-
         case ClientEvent.USER_STATUS_UPDATED:
-            const payload = action.payload as CustomEvent<UserStatusImmerSafe>;
             draft.userStatus = payload.detail;
             if (payload.detail.loggedIn) draft.ui.hasInvalidTokens = false;
             resetUiHelperStates(draft);
             draft.ui.showLoginOverlay = draft.ui.showMustLoginOverlay = !payload.detail.loggedIn;   // Show hide the overlay and must log in
-            draft.hasAuthenticatedOnce = draft.hasAuthenticatedOnce || payload.detail.loggedIn;     // Potentially set the auth once flag
+            break;
+        case ClientEvent.END_AUTH_CHECK:
+            draft.ui.silentLoginInitiated = false;
+            draft.ui.showMustLoginOverlay = !payload.detail.loggedIn;
             break;
     }
 

@@ -2,9 +2,9 @@ import {useOauthMonitor} from "../use-oauth-monitor.js";
 import {ButtonExpressionLevel, Overlay, type OverlayProps} from "./Overlay.js";
 import {AuthProps} from "../types.js";
 
-export const Login = ({children, reactConfig}: AuthProps) => {
+export const Login = ({children}: AuthProps) => {
     const [omcContext] = useOauthMonitor();
-    
+
     const {ui} = omcContext;
 
     let expressionLevel: ButtonExpressionLevel;
@@ -22,15 +22,12 @@ export const Login = ({children, reactConfig}: AuthProps) => {
         subMsg: ui.loginError ? "Failed to communicate with server" : !ui.showMustLoginOverlay && ui.lengthyLogin ? "this is taking longer than expected" : undefined,
         button: {
             label: "Login",
-            onClick: () => omcContext.omcClient?.handleLogin(omcContext.hasAuthenticatedOnce),
-            newWindow: omcContext.hasAuthenticatedOnce,
+            onClick: () => omcContext.omcClient?.handleLogin(true),
+            newWindow: true,
             expressionLevel: expressionLevel,
         },
-        userCanClose: !!(omcContext.hasAuthenticatedOnce || reactConfig?.deferredStart),
+        userCanClose: true,
     }
-
-    // Start the login listener if login will be with a new window
-    if (omcContext.hasAuthenticatedOnce) omcContext.omcClient?.prepareToHandleNewWindowLogin();
 
     return (
         <Overlay {...overlayProps}>

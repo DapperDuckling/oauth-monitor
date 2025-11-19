@@ -8,12 +8,10 @@ export interface OauthMonitorContextProps extends OauthMonitorState {
 
 export const InitialContext: OauthMonitorContextProps = {
     userStatus: {
-        userInfo: undefined,
         loggedIn: false,
         accessExpires: -1,
         refreshExpires: -1,
     },
-    hasAuthenticatedOnce: false,
     ui: {
         lengthyLogin: false,
         showLoginOverlay: true,

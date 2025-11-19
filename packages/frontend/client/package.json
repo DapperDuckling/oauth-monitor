@@ -27,8 +27,6 @@
     "prepare": "ts-patch install && typia patch"
   },
   "devDependencies": {
-    "@types/js-cookie": "^3.0.6",
-    "ts-node": "^10.9.2",
     "ts-patch": "^3.3.0",
     "typescript": "^5.4.2"
   },
@@ -43,7 +41,6 @@
   },
   "dependencies": {
     "@dapperduckling/oauth-monitor-common": "file:../../common",
-    "js-cookie": "^3.0.5",
     "typia": "^5.2.6"
   },
   "yalcWatch": {

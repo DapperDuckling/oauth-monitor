@@ -3,8 +3,11 @@ import type {Logger} from "pino";
 import {STORAGE_PREFIX_COMBINED} from "@dapperduckling/oauth-monitor-common";
 
 export enum ClientEvent {
+    START_AUTH_CHECK = "START_AUTH_CHECK",
     INVALID_TOKENS = "INVALID_TOKENS",
+    LOGIN_ERROR = "LOGIN_ERROR",
     USER_STATUS_UPDATED = "USER_STATUS_UPDATED",
+    END_AUTH_CHECK = "END_AUTH_CHECK",
 }
 
 export interface ClientConfig {
@@ -44,7 +47,7 @@ export interface ClientConfig {
 
     /**
      * @desc    The amount of time in minutes the client should attempt to refresh the access token in order
-     *          to keep it from expiring (NOTE: OMC server MUST be configured with a time at or greater).
+     *          to keep it from expiring (NOTE: Target server MUST be configured with a time at or greater).
      *          Set false to disable.
      * @default 2.5 minutes
      */
