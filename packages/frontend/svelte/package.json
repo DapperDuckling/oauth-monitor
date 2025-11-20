@@ -61,5 +61,6 @@
     "access": "public"
   },
   "svelte": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  "types": "./dist/index.d.ts",
+  "gitHead": "a686cd38071ba0da7bdceb7c03008e570e9de0c1"
 }
