@@ -8,14 +8,6 @@
     const store = getContext<OauthMonitorStore>('oauth-monitor-store');
     const client = getContext<OauthMonitorClient>('oauth-monitor-client');
 
-    let userStatus: any;
-    let ui: any;
-
-    store.subscribe(state => {
-        userStatus = state.userStatus;
-        ui = state.ui;
-    });
-
     const refreshProfile = async () => {
         console.log('Forcing reauth check...');
         await client.authCheck(true);
@@ -45,15 +37,15 @@
         <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2">User Status</h2>
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="text-gray-400">Logged In:</div>
-            <div class={userStatus?.loggedIn ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
-                {userStatus?.loggedIn ? 'YES' : 'NO'}
+            <div class={$store.userStatus?.loggedIn ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                {$store.userStatus?.loggedIn ? 'YES' : 'NO'}
             </div>
 
             <div class="text-gray-400">Access Expires:</div>
-            <div>{userStatus?.accessExpires || 'N/A'}</div>
+            <div>{$store.userStatus?.accessExpires || 'N/A'}</div>
 
             <div class="text-gray-400">Refresh Expires:</div>
-            <div>{userStatus?.refreshExpires || 'N/A'}</div>
+            <div>{$store.userStatus?.refreshExpires || 'N/A'}</div>
         </div>
     </div>
 
@@ -62,7 +54,7 @@
         <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2">Actions</h2>
 
         <div class="flex flex-wrap gap-4">
-            {#if !userStatus?.loggedIn}
+            {#if !$store.userStatus?.loggedIn}
                 <button class="btn-primary" on:click={doLogin}>Login (Redirect)</button>
                 <button class="btn-secondary" on:click={showLogin}>Show Login Modal</button>
             {:else}
@@ -77,7 +69,7 @@
     <!-- Debug Card -->
     <div class="bg-black/30 p-4 rounded border border-gray-800 font-mono text-xs overflow-auto max-h-60">
         <h3 class="text-gray-500 mb-2 uppercase font-bold">Debug UI State</h3>
-        <pre>{JSON.stringify(ui, null, 2)}</pre>
+        <pre>{JSON.stringify($store.ui, null, 2)}</pre>
     </div>
 
 </div>

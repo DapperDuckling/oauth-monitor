@@ -1,6 +1,7 @@
 import type { OauthMonitorClient } from "@dapperduckling/oauth-monitor-client";
 import type { UserStatus } from "@dapperduckling/oauth-monitor-common";
 import type { ComponentType } from "svelte";
+import type { Writable } from "svelte/store";
 
 // Re-export common types for convenience
 export type { UserStatus } from "@dapperduckling/oauth-monitor-common";
@@ -73,3 +74,7 @@ export interface SvelteConfig {
      */
     deferredStart?: boolean;
 }
+
+export type OauthMonitorStore = Writable<OauthMonitorState> & {
+    dispatch: (action: OauthMonitorStateActions) => void;
+};
