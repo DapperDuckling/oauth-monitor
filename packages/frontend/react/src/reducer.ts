@@ -28,6 +28,7 @@ const OauthMonitorClientEventHandler: ImmerReducerType = (draft, action) => {
             draft.ui.silentLoginInitiated = true;
             draft.ui.showMustLoginOverlay = false;
             draft.ui.loginError = false;
+            draft.ui.lengthyLogin = false;
             break;
         case ClientEvent.LOGIN_ERROR:
             draft.ui.loginError = true;
