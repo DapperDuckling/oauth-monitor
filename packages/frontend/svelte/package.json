@@ -11,6 +11,7 @@
   ],
   "author": "DapperDuckling Dev LLC",
   "license": "AGPL-3.0-only",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/DapperDuckling/oauth-monitor.git"

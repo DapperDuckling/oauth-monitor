@@ -35,5 +35,9 @@ sampleTrainingData.ts
 /.idea/oauth-monitor.iml
 /.idea/vcs.xml
 /.idea/workspace.xml
+.idea/inspectionProfiles/*
+.idea/modules.xml
 
 /*.log
+.svelte-kit/
+yalc.lock
