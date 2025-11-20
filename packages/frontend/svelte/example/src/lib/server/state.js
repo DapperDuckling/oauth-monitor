@@ -12,8 +12,8 @@ const createUserState = () => {
   const updateTokens = () => {
     update(state => {
       if (state.loggedIn) {
-        state.accessExpires = Math.floor(Date.now() / 1000) + 60 * 3; // 3 minutes
-        state.refreshExpires = Math.floor(Date.now() / 1000) + 60 * 5; // 5 minutes
+        state.accessExpires = Math.floor(Date.now() / 1000) + 60 * 0.5;
+        state.refreshExpires = -1;
       }
       return state;
     });
@@ -32,7 +32,7 @@ const createUserState = () => {
       updateTokens();
     }
   };
-  
+
   // Initial state and periodic refresh
   setLoggedIn(true);
   setInterval(updateTokens, 5000);

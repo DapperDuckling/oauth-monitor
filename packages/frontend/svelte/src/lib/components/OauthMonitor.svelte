@@ -55,8 +55,7 @@
                 }, 7000);
             }
 
-            if ((clientEvent === ClientEvent.USER_STATUS_UPDATED && (payload as UserStatus)['loggedIn']) ||
-                clientEvent === ClientEvent.LOGIN_ERROR) {
+            if (clientEvent === ClientEvent.END_AUTH_CHECK || clientEvent === ClientEvent.LOGIN_ERROR) {
                 clearTimeout(lengthyLoginTimeout);
             }
         });
@@ -104,10 +103,7 @@
             {#if config.svelte?.logoutModalComponent}
                 <svelte:component this={config.svelte.logoutModalComponent} {...config.svelte.logoutModalProps} />
             {:else}
-                <!-- Default content for logout if needed, or empty -->
-                <div class="mb-4">
-                    <LoginChild />
-                </div>
+                <LoginChild />
             {/if}
         </Logout>
     {/if}

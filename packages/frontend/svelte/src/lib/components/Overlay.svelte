@@ -28,7 +28,7 @@
 <!-- Backdrop -->
 <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <!-- Modal Card -->
-    <div class="relative w-full min-w-[265px] max-w-sm flex flex-col items-center gap-4 rounded-lg bg-[#051827] p-6 text-white shadow-xl border border-gray-800">
+    <div class="relative w-full min-w-[265px] max-w-sm flex flex-col items-center rounded-lg bg-[#051827] p-6 text-white shadow-xl border border-gray-800">
 
         {#if userCanClose}
             <button
@@ -42,13 +42,8 @@
             </button>
         {/if}
 
-        <!-- Content Slot (Logo, etc) -->
-        <div class="w-full flex justify-center">
-            <slot />
-        </div>
-
         <!-- Text Content -->
-        <div class="text-center space-y-1">
+        <div class="text-center space-y-1 mt-6">
             <h2 class="text-lg font-medium leading-6">{mainMsg}</h2>
             <div class="h-4"> <!-- Fixed height to prevent layout jump -->
                 {#if subMsg && subMsg.trim() !== ""}
@@ -57,6 +52,11 @@
                     </p>
                 {/if}
             </div>
+        </div>
+
+        <!-- Content Slot (Logo, etc) -->
+        <div class="w-full flex justify-center mb-2">
+            <slot />
         </div>
 
         <!-- Action Button -->
