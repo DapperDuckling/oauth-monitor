@@ -34,7 +34,7 @@ export class OauthMonitorClient {
 
         // Update the logger reference
         if (this.config.logger) {
-            this.config.logger = this.config.logger.child({"Source": "OauthMonitorClient"})
+            this.config.logger = this.config.logger.child?.({"Source": "OauthMonitorClient"})
         }
 
         // Listen for events from the storage api
