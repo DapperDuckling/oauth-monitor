@@ -235,8 +235,9 @@ export class OauthMonitorClient {
 
             // Handle 401, 403, or other non-2xx errors
             if (!response.ok) {
-                // noinspection ExceptionCaughtLocallyJS
                 this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
+                this.config.logger?.debug("Auth check not okay, assuming not authenticated.");
+                return;
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -259,6 +260,7 @@ export class OauthMonitorClient {
 
         } catch (error) {
             this.eventListener.dispatchEvent(ClientEvent.LOGIN_ERROR);
+            this.config.logger?.debug("Auth check failed.");
         } finally {
             // Clear the abort function
             this.authCheckAbort = null;
