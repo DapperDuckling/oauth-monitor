@@ -22,7 +22,7 @@
   "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "clean": "rimraf ./dist/",
-    "build": "npm run clean && svelte-package",
+    "build": "npm run clean && npm run check && svelte-package",
     "yalc:publish": "yalc publish --push",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "prepublishOnly": "npm run build"

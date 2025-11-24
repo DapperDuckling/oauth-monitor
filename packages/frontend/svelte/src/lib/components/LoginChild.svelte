@@ -2,7 +2,7 @@
     import { getContext } from 'svelte';
     import type { OauthMonitorStore } from '../store';
 
-    export let logo: string | undefined = undefined;
+    // export let logo: string | undefined = undefined;
 
     // Get store from context
     const store = getContext<OauthMonitorStore>('oauth-monitor-store');
@@ -28,14 +28,14 @@
 </div>
 
 <style>
-    .spinner-black {
-        animation: spin 12s linear infinite;
-        animation-delay: 6s;
-    }
+    /*.spinner-black {*/
+    /*    animation: spin 12s linear infinite;*/
+    /*    animation-delay: 6s;*/
+    /*}*/
 
-    .spinner-color {
-        animation: spin 12s linear infinite;
-    }
+    /*.spinner-color {*/
+    /*    animation: spin 12s linear infinite;*/
+    /*}*/
 
     @keyframes spin {
         0% { transform: rotate(0deg); }

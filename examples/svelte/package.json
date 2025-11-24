@@ -7,8 +7,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "check": "svelte-kit sync && svelte-check --tsconfig tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig tsconfig.json --watch",
     "yalc:add": "npm run yalc:add:client && npm run yalc:add:common && npm i",
     "yalc:add:client": "yalc add --dev @dapperduckling/oauth-monitor-client",
     "yalc:add:common": "yalc add --dev @dapperduckling/oauth-monitor-common"
