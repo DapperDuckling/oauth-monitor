@@ -1,6 +1,6 @@
 {
   "name": "@dapperduckling/oauth-monitor-react",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "An opinionated library for securing react apps without all the fuss",
   "keywords": [
     "react",
