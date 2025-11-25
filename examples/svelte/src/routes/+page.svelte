@@ -4,7 +4,7 @@
 
     const config = {
         client: {
-            apiServerOrigin: "http://localhost:3000",
+            apiServerOrigin: "http://localhost:3005",
             fastInitialAuthCheck: true,
             eagerRefreshTime: 0.5
         },

@@ -18,7 +18,7 @@
         svelte?: SvelteConfig;
     };
 
-    export let triggerStart: boolean;
+    export let triggerStart: boolean = true;
 
     // Create Store and Context
     const store = createOauthMonitorStore();
@@ -27,6 +27,7 @@
     // Instantiate Client
     const client = new OauthMonitorClient(config.client);
     setContext('oauth-monitor-client', client);
+    let isClientStarted = false;
 
     let lengthyLoginTimeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -71,6 +72,7 @@
 
         if (config.svelte?.deferredStart !== true) {
             client.start();
+            isClientStarted = true;
         }
 
         loaded = true;
@@ -85,6 +87,7 @@
 
     $: if (config.svelte?.deferredStart === true && loaded && triggerStart) {
         client.start();
+        isClientStarted = true;
     }
 
 </script>
@@ -93,7 +96,7 @@
 <slot />
 
 <!-- UI Components -->
-{#if config.svelte?.disableAuthComponents !== true && client.isStarted()}
+{#if config.svelte?.disableAuthComponents !== true && isClientStarted}
 
     {#if showLoginOverlay}
         <Login>
