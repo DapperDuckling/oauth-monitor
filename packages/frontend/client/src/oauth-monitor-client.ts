@@ -150,7 +150,10 @@ export class OauthMonitorClient {
         const userStatusWrapped = OauthMonitorClient.getStoredUserStatusWrapped();
 
         // Check for no result
-        if (userStatusWrapped === undefined) return;
+        if (userStatusWrapped === undefined) {
+            this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
+            return;
+        }
 
         // Cancel any background requests
         this.abortAuthCheck();
@@ -162,7 +165,10 @@ export class OauthMonitorClient {
         const userStatus = userStatusWrapped["payload"];
 
         // Check for a missing payload
-        if (userStatus === undefined) return;
+        if (userStatus === undefined) {
+            this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
+            return;
+        }
 
         // Update the user status hash
         this.userStatusHash = userStatusWrapped["checksum"];

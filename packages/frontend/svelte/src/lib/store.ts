@@ -37,6 +37,8 @@ const handleClientEvent = (state: OauthMonitorState, action: Extract<OauthMonito
         case ClientEvent.INVALID_TOKENS:
             state.ui.showLoginOverlay = true;
             state.ui.hasInvalidTokens = true;
+            state.ui.silentLoginInitiated = false;
+            state.ui.showMustLoginOverlay = true;
             break;
         case ClientEvent.START_AUTH_CHECK:
             state.ui.silentLoginInitiated = true;
