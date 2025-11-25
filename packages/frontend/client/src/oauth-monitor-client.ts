@@ -36,18 +36,18 @@ export class OauthMonitorClient {
         if (this.config.logger) {
             this.config.logger = this.config.logger.child?.({"Source": "OauthMonitorClient"})
         }
-
-        // Listen for events from the storage api
-        if (typeof window !== 'undefined') {
-            window.addEventListener("storage", this.handleStorageEvent);
-            window.addEventListener("focus", this.handleOnFocus);
-        }
     }
 
     public start = () => {
         // Check to see if the client is already started
         if (this.started) {
             this.config.logger?.error(`Already started, cannot start again`);
+        }
+
+        // Listen for events from the storage api
+        if (typeof window !== 'undefined') {
+            window.addEventListener("storage", this.handleStorageEvent);
+            window.addEventListener("focus", this.handleOnFocus);
         }
 
         // Set the auth to happen on the next tick

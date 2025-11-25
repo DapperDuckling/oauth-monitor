@@ -14,11 +14,9 @@
     "strict": true,
     "target": "es2022",
     "verbatimModuleSyntax": false,
-    "types": [
-      "svelte"
-    ],
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "noEmitOnError": false
   },
   "include": [
     "src/**/*.ts",

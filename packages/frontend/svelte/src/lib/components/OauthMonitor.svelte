@@ -18,6 +18,8 @@
         svelte?: SvelteConfig;
     };
 
+    export let triggerStart: boolean;
+
     // Create Store and Context
     const store = createOauthMonitorStore();
     setContext('oauth-monitor-store', store);
@@ -61,6 +63,8 @@
         });
     };
 
+    let loaded = false;
+
     onMount(() => {
         store.dispatch({ type: OmcDispatchType.SET_OMC_CLIENT, payload: client });
         setupListeners();
@@ -68,6 +72,8 @@
         if (config.svelte?.deferredStart !== true) {
             client.start();
         }
+
+        loaded = true;
     });
 
     onDestroy(() => {
@@ -76,13 +82,18 @@
         unsubscribeStore();
         clearTimeout(lengthyLoginTimeout);
     });
+
+    $: if (config.svelte?.deferredStart === true && loaded && triggerStart) {
+        client.start();
+    }
+
 </script>
 
 <!-- Slot for the main app content -->
 <slot />
 
 <!-- UI Components -->
-{#if config.svelte?.disableAuthComponents !== true}
+{#if config.svelte?.disableAuthComponents !== true && client.isStarted()}
 
     {#if showLoginOverlay}
         <Login>
