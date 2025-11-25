@@ -37,48 +37,66 @@ By default, the plugins will look for the following routes:
 Below is a sample implementation using Express.js. This is for demonstration purposes; you should adapt it to your own backend environment and authentication logic.
 
 ```javascript
-const express = require('express');
-const { createHash } = require('node:crypto');
+import express from 'express';
+import { createHash } from 'node:crypto';
+
 const app = express();
+const PORT = 3001;
+
+const getUserStatus = () => {
+  // *** Replace this with your actual authentication logic. ***
+  const userStatus = {
+    loggedIn: true, // or false
+    accessExpires: 1678886400, // Unix timestamp (seconds) for access token expiry
+    refreshExpires: 1678890000, // Unix timestamp (seconds) for refresh token expiry (if not available, set -1)
+  };
+
+  const payloadString = JSON.stringify(userStatus);
+  
+  return {
+    checksum: createHash('md5').update(payloadString).digest('hex'),
+    payload: userStatus,
+    timestamp: Date.now(),
+  };
+};
 
 // /oauth-monitor/user-status
 // This endpoint should return the current user's authentication status.
 app.get('/oauth-monitor/user-status', (req, res) => {
-    // This is where you should check the user's session.
-    // Replace this with your actual authentication logic.
-    const userStatus = {
-        loggedIn: true, // or false
-        accessExpires: 1678886400, // Unix timestamp (seconds) for access token expiry
-        refreshExpires: 1678890000, // Unix timestamp (seconds) for refresh token expiry
-    };
-    const payloadString = JSON.stringify(userStatus);
-
-    res.json({
-        checksum: createHash('md5').update(payloadString).digest('hex'),
-        payload: userStatus,
-        timestamp: Date.now(),
-    });
+  // This is where you should check the user's session.
+  res.json(getUserStatus());
 });
 
 // /oauth-monitor/login
 // This endpoint should be the redirect URI for your OAuth flow.
-// Its only job is to close the login window/popup.
 app.get('/oauth-monitor/login', (req, res) => {
-    // After your application has successfully authenticated the user,
-    // the OAuth provider should redirect to this endpoint.
-    res.send('<script>window.close();</script>');
+  // After your application has successfully authenticated the user,
+  // the OAuth provider should redirect to this endpoint.
+
+  const userStatus = getUserStatus();
+  const userStatusDataB64 = Buffer.from(JSON.stringify(userStatus)).toString('base64');
+
+  res.send(`
+        <script>
+        if (window.opener) {
+            const data = JSON.parse(atob('${userStatusDataB64}'));
+            window.opener.postMessage(data, window.location.origin);
+        }
+        window.close();
+        </script>
+    `);
 });
 
 // /oauth-monitor/logout
 // This endpoint should initiate your application's logout process.
 app.get('/oauth-monitor/logout', (req, res) => {
-    // This should trigger your application's logout logic and then
-    // redirect to your identity provider's logout URL.
-    const idpLogoutUrl = 'https://your-oauth-provider.com/logout?redirect_uri=http://localhost:3000';
-    res.redirect(idpLogoutUrl);
+  // This should trigger your application's logout logic and then
+  // redirect to your identity provider's logout URL.
+  const idpLogoutUrl = 'https://your-oauth-provider.com/logout?redirect_uri=http://localhost:3000';
+  res.redirect(idpLogoutUrl);
 });
 
-app.listen(3001, () => {
-    console.log('API server listening at http://localhost:3001');
+app.listen(PORT, () => {
+  console.log(`API server listening at http://localhost:${PORT}`);
 });
 ```

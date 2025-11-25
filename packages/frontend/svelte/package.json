@@ -22,7 +22,7 @@
   "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "clean": "rimraf ./dist/",
-    "build:css": "npx @tailwindcss/cli -i ./src/lib/styles.css -o ./dist/styles.css",
+    "build:css": "npx @tailwindcss/cli -i ./src/lib/styles.css -o ./dist/styles.css --minify",
     "build:svelte": "svelte-package",
     "build": "npm run clean && npm run check && npm run build:svelte && npm run build:css",
     "yalc:publish": "yalc publish --push",

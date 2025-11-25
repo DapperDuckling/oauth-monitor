@@ -48,6 +48,7 @@ export class OauthMonitorClient {
         if (typeof window !== 'undefined') {
             window.addEventListener("storage", this.handleStorageEvent);
             window.addEventListener("focus", this.handleOnFocus);
+            window.addEventListener('message', this.handleMessage);
         }
 
         // Set the auth to happen on the next tick
@@ -114,6 +115,16 @@ export class OauthMonitorClient {
     private handleOnFocus = () => {
         if (typeof window === 'undefined') return;
         this.authCheckNoWait();
+    }
+
+    private handleMessage =  (event: MessageEvent) => {
+        // Security check
+        if (event.origin !== window.location.origin) return;
+
+        // Check type
+        if (is<UserStatusWrapped>(event.data)) {
+            this.storeUserStatus(event.data);
+        }
     }
 
     handleLogin = (newWindow?: boolean) => {
