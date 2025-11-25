@@ -1,5 +1,6 @@
 <script lang="ts">
     import { OauthMonitor } from '@dapperduckling/oauth-monitor-svelte';
+    import '@dapperduckling/oauth-monitor-svelte/styles.css';
     import ControlPanel from '$lib/ControlPanel.svelte';
 
     const config = {

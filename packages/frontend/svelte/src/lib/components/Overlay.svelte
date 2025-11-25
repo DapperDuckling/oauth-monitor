@@ -62,7 +62,7 @@
         <!-- Action Button -->
         <button
                 on:click={buttonAction}
-                class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded text-sm font-bold uppercase transition-all duration-200"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2 w-4 h-4 rounded text-sm font-bold uppercase transition-all duration-200"
                 class:btn-subdued={buttonExpressionLevel === 'subdued'}
                 class:btn-regular={buttonExpressionLevel === 'regular'}
                 class:btn-expressed={buttonExpressionLevel === 'expressed'}

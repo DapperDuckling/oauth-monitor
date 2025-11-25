@@ -22,7 +22,9 @@
   "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
     "clean": "rimraf ./dist/",
-    "build": "npm run clean && npm run check && svelte-package",
+    "build:css": "npx @tailwindcss/cli -i ./src/lib/styles.css -o ./dist/styles.css",
+    "build:svelte": "svelte-package",
+    "build": "npm run clean && npm run check && npm run build:svelte && npm run build:css",
     "yalc:publish": "yalc publish --push",
     "check": "svelte-check",
     "prepublishOnly": "npm run build"
@@ -33,7 +35,8 @@
       "svelte": "./dist/index.js",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./styles.css": "./dist/styles.css"
   },
   "files": [
     "dist",
@@ -47,10 +50,14 @@
   "dependencies": {
     "@dapperduckling/oauth-monitor-client": "file:../client",
     "@dapperduckling/oauth-monitor-common": "file:../../common",
-    "@tailwindcss/vite": "^4.1.17"
+    "@tailwindcss/cli": "^4.1.17"
   },
   "devDependencies": {
+    "@sveltejs/package": "^2.5.6",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tailwindcss/vite": "^4.1.17",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
     "svelte": "^5.43.14",
     "svelte-check": "^4.3.4",
     "tailwindcss": "^4.1.17",

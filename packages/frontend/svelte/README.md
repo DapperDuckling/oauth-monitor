@@ -22,6 +22,7 @@ This package provides the official Svelte implementation for OAuth Monitor, offe
     ```svelte
     <script lang="ts">
         import { OauthMonitor } from '@dapperduckling/oauth-monitor-svelte';
+        import '@dapperduckling/oauth-monitor-svelte/styles.css';
 
         const config = {
             client: {

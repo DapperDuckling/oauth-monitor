@@ -37,7 +37,7 @@
     "@dapperduckling/oauth-monitor-common": "file:../../common",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.14.19",
+    "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.14.18",
     "immer": "^10.0.3",
     "use-immer": "^0.9.0"
