@@ -41,3 +41,4 @@ sampleTrainingData.ts
 /*.log
 .svelte-kit/
 yalc.lock
+/examples/svelte/.yalc/

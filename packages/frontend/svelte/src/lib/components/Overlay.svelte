@@ -26,7 +26,7 @@
 </script>
 
 <!-- Backdrop -->
-<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+<div class="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <!-- Modal Card -->
     <div class="relative w-full min-w-[265px] max-w-sm flex flex-col items-center rounded-lg bg-[#051827] p-6 text-white shadow-xl border border-gray-800">
 
@@ -62,7 +62,7 @@
         <!-- Action Button -->
         <button
                 on:click={buttonAction}
-                class="w-full flex items-center justify-center gap-2 px-4 py-2 w-4 h-4 rounded text-sm font-bold uppercase transition-all duration-200"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded text-sm font-bold uppercase transition-all duration-200"
                 class:btn-subdued={buttonExpressionLevel === 'subdued'}
                 class:btn-regular={buttonExpressionLevel === 'regular'}
                 class:btn-expressed={buttonExpressionLevel === 'expressed'}
