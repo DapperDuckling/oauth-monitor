@@ -1,6 +1,6 @@
 {
   "name": "@dapperduckling/oauth-monitor-svelte",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "An opinionated library for securing Svelte apps without all the fuss",
   "keywords": [
     "svelte",
