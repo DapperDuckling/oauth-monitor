@@ -25,6 +25,7 @@ const OauthMonitorClientEventHandler: ImmerReducerType = (draft, action) => {
             draft.ui.hasInvalidTokens = true;
             draft.ui.silentLoginInitiated = false;
             draft.ui.showMustLoginOverlay = true;
+            draft.userStatus.loggedIn = false;
             break;
         case ClientEvent.START_AUTH_CHECK:
             draft.ui.silentLoginInitiated = true;

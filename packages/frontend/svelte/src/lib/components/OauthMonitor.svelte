@@ -5,7 +5,6 @@
     import { createOauthMonitorStore } from '../store';
     import { OmcDispatchType } from '../types';
     import type { SvelteConfig } from '../types';
-    import type { UserStatus } from '@dapperduckling/oauth-monitor-common';
 
     // UI Components
     import Login from './Login.svelte';
@@ -108,7 +107,7 @@
         </Login>
     {/if}
 
-    {#if !showLoginOverlay && !loggedIn}
+    {#if !showLoginOverlay && loggedIn !== true}
         <FloatingPill />
     {/if}
 
