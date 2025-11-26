@@ -2,6 +2,7 @@
     import { OauthMonitor } from '@dapperduckling/oauth-monitor-svelte';
     import '@dapperduckling/oauth-monitor-svelte/styles.css';
     import ControlPanel from '$lib/ControlPanel.svelte';
+    import {browser, dev} from "$app/environment";
 
     const config = {
         client: {
@@ -9,14 +10,16 @@
             fastInitialAuthCheck: true,
             eagerRefreshTime: 0.5
         },
-        svelte: {}
+        svelte: {
+            deferredStart: true,
+        }
     };
 </script>
 
 <div class="min-h-screen flex flex-col items-center justify-center p-8">
     <h1 class="text-3xl font-bold mb-8 text-[#79b4c3]">Svelte OAuth Monitor Example</h1>
 
-    <OauthMonitor {config}>
+    <OauthMonitor {config} triggerStart={true}>
         <ControlPanel />
     </OauthMonitor>
 </div>
