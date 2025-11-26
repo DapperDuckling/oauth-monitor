@@ -30,17 +30,6 @@
 
     let lengthyLoginTimeout: ReturnType<typeof setTimeout> | undefined;
 
-    // Store subscriptions for template rendering
-    let showLoginOverlay = false;
-    let showLogoutOverlay = false;
-    let loggedIn = false;
-
-    const unsubscribeStore = store.subscribe(state => {
-        showLoginOverlay = state.ui.showLoginOverlay;
-        showLogoutOverlay = state.ui.showLogoutOverlay;
-        loggedIn = state.userStatus.loggedIn;
-    });
-
     // Setup Event Listeners
     const setupListeners = () => {
         // Main Client Listener
@@ -80,7 +69,6 @@
     onDestroy(() => {
         client.destroy();
         store.dispatch({ type: OmcDispatchType.DESTROY_CLIENT });
-        unsubscribeStore();
         clearTimeout(lengthyLoginTimeout);
     });
 
@@ -97,7 +85,7 @@
 <!-- UI Components -->
 {#if config.svelte?.disableAuthComponents !== true && isClientStarted}
 
-    {#if showLoginOverlay}
+    {#if $store.ui.showLoginOverlay}
         <Login>
             {#if config.svelte?.loginModalComponent}
                 <svelte:component this={config.svelte.loginModalComponent} {...config.svelte.loginModalProps} />
@@ -107,11 +95,11 @@
         </Login>
     {/if}
 
-    {#if !showLoginOverlay && loggedIn !== true}
+    {#if !$store.ui.showLoginOverlay && $store.userStatus.loggedIn !== true}
         <FloatingPill />
     {/if}
 
-    {#if showLogoutOverlay}
+    {#if $store.ui.showLogoutOverlay}
         <Logout>
             {#if config.svelte?.logoutModalComponent}
                 <svelte:component this={config.svelte.logoutModalComponent} {...config.svelte.logoutModalProps} />

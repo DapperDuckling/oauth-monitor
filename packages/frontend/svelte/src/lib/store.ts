@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { OauthMonitorState, OauthMonitorStateActions } from './types';
+import type {OauthMonitorState, OauthMonitorStateActions, OauthMonitorStore} from './types';
 import { OmcDispatchType } from './types';
 import { ClientEvent } from "@dapperduckling/oauth-monitor-client";
 import type { UserStatus } from "@dapperduckling/oauth-monitor-common";
@@ -102,8 +102,7 @@ function createReducer(state: OauthMonitorState, action: OauthMonitorStateAction
 
     return newState;
 }
-
-export const createOauthMonitorStore = () => {
+export const createOauthMonitorStore = (): OauthMonitorStore => {
     const { subscribe, update, set } = writable<OauthMonitorState>(structuredClone(initialState));
 
     const dispatch = (action: OauthMonitorStateActions) => {
@@ -116,5 +115,3 @@ export const createOauthMonitorStore = () => {
         reset: () => set(structuredClone(initialState))
     };
 };
-
-export type OauthMonitorStore = ReturnType<typeof createOauthMonitorStore>;

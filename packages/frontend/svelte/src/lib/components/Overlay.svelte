@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher, getContext } from 'svelte';
     import type { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
-    import type { OauthMonitorStore } from '../store';
+    import type { OauthMonitorStore } from '../types';
     import { OmcDispatchType } from '../types';
 
     export let mainMsg: string;

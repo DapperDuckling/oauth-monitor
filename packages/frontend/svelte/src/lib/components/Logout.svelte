@@ -1,7 +1,7 @@
 <script lang="ts">
     import { getContext } from 'svelte';
     import Overlay from './Overlay.svelte';
-    import type { OauthMonitorStore } from '../store';
+    import type { OauthMonitorStore } from '../types';
     import type { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
     import { OmcDispatchType } from '../types';
 

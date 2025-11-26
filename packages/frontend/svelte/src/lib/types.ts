@@ -75,6 +75,8 @@ export interface SvelteConfig {
     deferredStart?: boolean;
 }
 
-export type OauthMonitorStore = Writable<OauthMonitorState> & {
+export type OauthMonitorStore = {
+    subscribe: Writable<OauthMonitorState>['subscribe'];
     dispatch: (action: OauthMonitorStateActions) => void;
+    reset: () => void;
 };

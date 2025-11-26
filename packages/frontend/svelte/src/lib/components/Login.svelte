@@ -1,21 +1,13 @@
 <script lang="ts">
     import { getContext } from 'svelte';
     import Overlay from './Overlay.svelte';
-    import type { OauthMonitorStore } from '../store';
+    import type { OauthMonitorStore } from '../types';
     import type { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
 
     const store = getContext<OauthMonitorStore>('oauth-monitor-store');
     const client = getContext<OauthMonitorClient>('oauth-monitor-client');
 
-    let ui = {
-        showMustLoginOverlay: false,
-        loginError: false,
-        lengthyLogin: false
-    };
-
-    store.subscribe(state => {
-        ui = state.ui;
-    });
+    $: ui = $store.ui;
 
     // Reactive declarations
     $: expressionLevel = (ui.showMustLoginOverlay || ui.loginError) ? "expressed" :

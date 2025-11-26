@@ -6,6 +6,5 @@ export { default as FloatingPill } from './components/FloatingPill.svelte';
 export { default as Overlay } from './components/Overlay.svelte';
 
 export { createOauthMonitorStore } from './store';
-export type { OauthMonitorStore } from './store';
 
 export * from './types';

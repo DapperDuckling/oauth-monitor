@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getContext } from 'svelte';
-    import type { OauthMonitorStore } from '../store';
+    import type { OauthMonitorStore } from '../types';
 
     // export let logo: string | undefined = undefined;
 
@@ -8,13 +8,7 @@
     const store = getContext<OauthMonitorStore>('oauth-monitor-store');
 
     // Subscribe to store to react to UI state
-    let silentLoginInitiated = false;
-    let showMustLoginOverlay = false;
-
-    store.subscribe(state => {
-        silentLoginInitiated = state.ui.silentLoginInitiated;
-        showMustLoginOverlay = state.ui.showMustLoginOverlay;
-    });
+    $: silentLoginInitiated = $store.ui.silentLoginInitiated;
 
     $: animationVisible = silentLoginInitiated;
 </script>
