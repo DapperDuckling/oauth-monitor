@@ -45,12 +45,12 @@ export type OauthMonitorStateActions =
 
 export interface SvelteConfig {
     /**
-     * @desc Disable the built-in UI components (Login/Logout/Pill) if you want to build your own
+     * @desc Disable the built-in UI components (Login/Logout/Pill) if you want to build your own entirely outside the monitor
      */
     disableAuthComponents?: boolean;
 
     /**
-     * @desc Pass a Svelte component to render inside the login modal (e.g., Logo or custom message)
+     * @desc Pass a Svelte component to replace the default Login modal entirely
      */
     loginModalComponent?: ComponentType;
 
@@ -60,7 +60,7 @@ export interface SvelteConfig {
     loginModalProps?: Record<string, any>;
 
     /**
-     * @desc Pass a Svelte component to render inside the logout modal
+     * @desc Pass a Svelte component to replace the default Logout modal entirely
      */
     logoutModalComponent?: ComponentType;
 
@@ -68,6 +68,16 @@ export interface SvelteConfig {
      * @desc Pass props to the logoutModalComponent
      */
     logoutModalProps?: Record<string, any>;
+
+    /**
+     * @desc Pass a Svelte component to replace the default Floating Pill entirely
+     */
+    floatingPillComponent?: ComponentType;
+
+    /**
+     * @desc Pass props to the floatingPillComponent
+     */
+    floatingPillProps?: Record<string, any>;
 
     /**
      * @desc Defer the start of the plugin (auto-start disabled)

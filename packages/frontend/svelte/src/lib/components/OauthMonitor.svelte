@@ -85,28 +85,50 @@
 <!-- UI Components -->
 {#if config.svelte?.disableAuthComponents !== true && isClientStarted}
 
+    <!-- Login UI -->
     {#if $store.ui.showLoginOverlay}
-        <Login>
-            {#if config.svelte?.loginModalComponent}
-                <svelte:component this={config.svelte.loginModalComponent} {...config.svelte.loginModalProps} />
-            {:else}
+        {#if config.svelte?.loginModalComponent}
+            <!-- User override -->
+            <svelte:component
+                this={config.svelte.loginModalComponent}
+                {...config.svelte.loginModalProps}
+            />
+        {:else}
+            <!-- Default -->
+            <Login>
                 <LoginChild />
-            {/if}
-        </Login>
+            </Login>
+        {/if}
     {/if}
 
+    <!-- Floating Pill UI -->
     {#if !$store.ui.showLoginOverlay && $store.userStatus.loggedIn !== true}
-        <FloatingPill />
+        {#if config.svelte?.floatingPillComponent}
+            <!-- User override -->
+            <svelte:component
+                this={config.svelte.floatingPillComponent}
+                {...config.svelte.floatingPillProps}
+            />
+        {:else}
+            <!-- Default -->
+            <FloatingPill />
+        {/if}
     {/if}
 
+    <!-- Logout UI -->
     {#if $store.ui.showLogoutOverlay}
-        <Logout>
-            {#if config.svelte?.logoutModalComponent}
-                <svelte:component this={config.svelte.logoutModalComponent} {...config.svelte.logoutModalProps} />
-            {:else}
+        {#if config.svelte?.logoutModalComponent}
+            <!-- User override -->
+            <svelte:component
+                this={config.svelte.logoutModalComponent}
+                {...config.svelte.logoutModalProps}
+            />
+        {:else}
+            <!-- Default -->
+            <Logout>
                 <LoginChild />
-            {/if}
-        </Logout>
+            </Logout>
+        {/if}
     {/if}
 
 {/if}

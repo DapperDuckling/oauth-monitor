@@ -1,4 +1,4 @@
-import {type ReactNode, useEffect} from 'react';
+import {type ReactNode, useEffect, type ComponentType} from 'react';
 import {
     type ClientConfig, ClientEvent, OauthMonitorClient,
 } from "@dapperduckling/oauth-monitor-client";
@@ -20,14 +20,44 @@ export type ReactConfig = {
     disableAuthComponents?: boolean,
 
     /**
-     * @desc Specify a component to pass to the login modal for slight customization
+     * @desc Specify a component to replace the default Login modal entirely
+     */
+    loginModalComponent?: ComponentType<any>;
+
+    /**
+     * @desc Props to pass to the custom loginModalComponent
+     */
+    loginModalProps?: Record<string, any>;
+
+    /**
+     * @desc Specify a component to pass to the login modal for slight customization (Default implementation only)
      */
     loginModalChildren?: ReactNode;
 
     /**
-     * @desc Specify a component to pass to the logout modal for slight customization
+     * @desc Specify a component to replace the default Logout modal entirely
+     */
+    logoutModalComponent?: ComponentType<any>;
+
+    /**
+     * @desc Props to pass to the custom logoutModalComponent
+     */
+    logoutModalProps?: Record<string, any>;
+
+    /**
+     * @desc Specify a component to pass to the logout modal for slight customization (Default implementation only)
      */
     logoutModalChildren?: ReactNode;
+
+    /**
+     * @desc Specify a component to replace the default Floating Pill entirely
+     */
+    floatingPillComponent?: ComponentType<any>;
+
+    /**
+     * @desc Props to pass to the custom floatingPillComponent
+     */
+    floatingPillProps?: Record<string, any>;
 
     /**
      * Defer the start of the plugin
@@ -80,7 +110,7 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
             throw new Error("No config provided to OauthMonitorProvider");
         }
 
-        // Instantiate the keycloak connector client
+        // Instantiate the oauth connector client
         // const omcClient = OauthMonitorClient(config.client);
         const omcClient = new OauthMonitorClient(config.client);
 
@@ -134,9 +164,29 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
             <OauthMonitorDispatchContext.Provider value={omcDispatch}>
                 {config.react?.disableAuthComponents !== true &&
                     <ThemeProvider theme={theme}>
-                        {omcContext.ui.showLoginOverlay && <Login {...config.react}>{config.react?.loginModalChildren}</Login>}
-                        {!omcContext.ui.showLoginOverlay && !omcContext.userStatus.loggedIn && <FloatingPill/>}
-                        {omcContext.ui.showLogoutOverlay && <Logout {...config.react}>{config.react?.logoutModalChildren}</Logout>}
+                        {omcContext.ui.showLoginOverlay && (
+                            config.react?.loginModalComponent ? (
+                                <config.react.loginModalComponent {...config.react.loginModalProps} />
+                            ) : (
+                                <Login {...config.react}>{config.react?.loginModalChildren}</Login>
+                            )
+                        )}
+
+                        {!omcContext.ui.showLoginOverlay && !omcContext.userStatus.loggedIn && (
+                            config.react?.floatingPillComponent ? (
+                                <config.react.floatingPillComponent {...config.react.floatingPillProps} />
+                            ) : (
+                                <FloatingPill/>
+                            )
+                        )}
+
+                        {omcContext.ui.showLogoutOverlay && (
+                            config.react?.logoutModalComponent ? (
+                                <config.react.logoutModalComponent {...config.react.logoutModalProps} />
+                            ) : (
+                                <Logout {...config.react}>{config.react?.logoutModalChildren}</Logout>
+                            )
+                        )}
                     </ThemeProvider>
                 }
                 {children}

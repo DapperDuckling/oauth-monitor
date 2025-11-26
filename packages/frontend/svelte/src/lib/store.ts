@@ -74,10 +74,6 @@ function createReducer(state: OauthMonitorState, action: OauthMonitorStateAction
     switch (action.type) {
         case OmcDispatchType.OMC_CLIENT_EVENT:
             return handleClientEvent(newState, action);
-
-        // Note: SET_OMC_CLIENT is handled in the component context,
-        // the store primarily holds data derived from the client
-
         case OmcDispatchType.LENGTHY_LOGIN:
             newState.ui.lengthyLogin = true;
             break;

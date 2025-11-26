@@ -2,7 +2,7 @@
     import { OauthMonitor } from '@dapperduckling/oauth-monitor-svelte';
     import '@dapperduckling/oauth-monitor-svelte/styles.css';
     import ControlPanel from '$lib/ControlPanel.svelte';
-    import {browser, dev} from "$app/environment";
+    import CustomLogo from "$lib/CustomLogo.svelte";
 
     const config = {
         client: {
@@ -12,6 +12,7 @@
         },
         svelte: {
             deferredStart: true,
+            logoutModalComponent: CustomLogo,
         }
     };
 </script>

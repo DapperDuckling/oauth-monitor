@@ -2,6 +2,11 @@
 
 This package provides the official Svelte implementation for OAuth Monitor, offering a component and context-based system to track a user's authentication status. It is designed to be flexible and easy to integrate into any Svelte project.
 
+## Table of Contents
+
+1. [Getting Started](#getting-started)
+2. [Overriding UI Components](#overriding-ui-components)
+
 ## Getting Started
 
 1.  **Installation:**
@@ -64,3 +69,161 @@ This package provides the official Svelte implementation for OAuth Monitor, offe
         {/if}
     </div>
     ```
+
+## Overriding UI Components
+
+By default, this package comes with a dark-themed UI for the Login Modal, Logout Modal, and a "Floating Pill" that indicates read-only status. You can override these components entirely with your own designs by passing them into the `svelte` config.
+
+### 1. Custom Login Modal
+
+The Login Modal appears when the user's session is invalid or expired.
+
+**Configuration:**
+
+```typescript
+import MyCustomLogin from './MyCustomLogin.svelte';
+
+const config = {
+    // ... client config
+    svelte: {
+        loginModalComponent: MyCustomLogin,
+        loginModalProps: { title: "Welcome Back" } // Optional props
+    }
+};
+```
+
+**Implementation Example:**
+
+Your component should handle three main states:
+1.  **Standard:** Prompt the user to login.
+2.  **Lengthy Login (`ui.lengthyLogin`):** The server is taking >7 seconds to respond. Show a spinner or message so the user knows it hasn't frozen.
+3.  **Error (`ui.loginError`):** The server failed to respond (network error/500).
+
+```svelte
+<!-- MyCustomLogin.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { OauthMonitorStore } from '@dapperduckling/oauth-monitor-svelte';
+    import type { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
+
+    // 1. Access the store and client
+    const store = getContext<OauthMonitorStore>('oauth-monitor-store');
+    const client = getContext<OauthMonitorClient>('oauth-monitor-client');
+
+    // 2. React to UI flags
+    $: ui = $store.ui;
+    
+    const handleLogin = () => client.handleLogin(true);
+</script>
+
+<div class="modal-backdrop">
+    <div class="modal">
+        <h2>Authentication Required</h2>
+
+        {#if ui.loginError}
+            <div class="error-alert">
+                Unable to reach authentication server. Please try again later.
+            </div>
+        {:else if ui.lengthyLogin}
+            <div class="warning-alert">
+                Connecting to identity provider is taking longer than usual...
+            </div>
+        {/if}
+
+        <button on:click={handleLogin}>
+            Log In via SSO
+        </button>
+    </div>
+</div>
+```
+
+### 2. Custom Logout Modal
+
+The Logout Modal appears when `client.handleLogout()` is called but before the actual redirect, allowing for a "Are you sure?" confirmation or a "Signing out..." spinner.
+
+**Configuration:**
+
+```typescript
+import MyCustomLogout from './MyCustomLogout.svelte';
+
+const config = {
+    svelte: {
+        logoutModalComponent: MyCustomLogout
+    }
+};
+```
+
+**Implementation Example:**
+
+```svelte
+<!-- MyCustomLogout.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
+    import type { OauthMonitorStore } from '@dapperduckling/oauth-monitor-svelte';
+    import { OmcDispatchType } from '@dapperduckling/oauth-monitor-svelte';
+
+    const client = getContext<OauthMonitorClient>('oauth-monitor-client');
+    const store = getContext<OauthMonitorStore>('oauth-monitor-store');
+
+    const confirmLogout = () => {
+         // Notify store we are executing logout (optional, for UI state)
+        store.dispatch({ type: OmcDispatchType.EXECUTING_LOGOUT });
+        // Trigger actual logout
+        client.handleLogout();
+    };
+    
+    const cancel = () => {
+        // Hides the modal
+        store.dispatch({ type: OmcDispatchType.HIDE_DIALOG });
+        // Aborts any pending check if one was running
+        client.abortAuthCheck(); 
+    };
+</script>
+
+<div class="modal">
+    <p>Are you sure you want to log out?</p>
+    <button on:click={confirmLogout}>Yes, Logout</button>
+    <button on:click={cancel}>Cancel</button>
+</div>
+```
+
+### 3. Custom Floating Pill
+
+The Floating Pill is a small indicator shown when the user is **not** logged in but is viewing the app in read-only mode (if allowed).
+
+**Configuration:**
+
+```typescript
+import MyFloatingPill from './MyFloatingPill.svelte';
+
+const config = {
+    svelte: {
+        floatingPillComponent: MyFloatingPill
+    }
+};
+```
+
+**Implementation Example:**
+
+```svelte
+<!-- MyFloatingPill.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
+    import { OmcDispatchType, type OauthMonitorStore } from '@dapperduckling/oauth-monitor-svelte';
+
+    const store = getContext<OauthMonitorStore>('oauth-monitor-store');
+    const client = getContext<OauthMonitorClient>('oauth-monitor-client');
+
+    const login = () => {
+        store.dispatch({ type: OmcDispatchType.SHOW_LOGIN });
+        client.handleLogin(true);
+    };
+</script>
+
+<div class="fixed-bottom-right">
+    <span>Guest Mode</span>
+    <button on:click={login}>Sign In</button>
+</div>
+```
