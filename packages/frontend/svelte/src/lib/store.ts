@@ -78,7 +78,6 @@ function createReducer(state: OauthMonitorState, action: OauthMonitorStateAction
             newState.ui.lengthyLogin = true;
             break;
         case OmcDispatchType.EXECUTING_LOGOUT:
-            newState.ui.showLogoutOverlay = true;
             newState.ui.executingLogout = true;
             break;
         case OmcDispatchType.SHOW_LOGIN:

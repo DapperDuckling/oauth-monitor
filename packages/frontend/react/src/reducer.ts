@@ -63,7 +63,6 @@ export const reducer: ImmerReducerType = (draft, action) => {
             draft.ui.lengthyLogin = true;
             break;
         case OmcDispatchType.EXECUTING_LOGOUT:
-            draft.ui.showLogoutOverlay = true;
             draft.ui.executingLogout = true;
             break;
         case OmcDispatchType.SHOW_LOGIN:
