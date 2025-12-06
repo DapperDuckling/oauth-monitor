@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import {OauthMonitorProvider} from "@dapperduckling/oauth-monitor-react";
-import { Content } from './content.js';
-import { DapperDucklingLoginChild } from './DapperDucklingLoginChild.js';
+import { Content } from './content';
+import { DapperDucklingLoginChild } from './DapperDucklingLoginChild';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
