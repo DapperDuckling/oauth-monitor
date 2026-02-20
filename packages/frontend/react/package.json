@@ -40,7 +40,7 @@
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.14.18",
     "immer": "^10.0.3",
-    "use-immer": "^0.9.0"
+    "use-immer": "^0.11.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.38",
