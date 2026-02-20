@@ -31,13 +31,16 @@
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "@typescript-eslint/parser": "^8.48.1",
-    "eslint": "^8.57.1",
-    "eslint-import-resolver-typescript": "^4.3.2",
-    "eslint-plugin-import-x": "^4.10.2",
-    "lerna": "^9.0.1",
+    "eslint": "^10.0.0",
+    "lerna": "^9.0.4",
     "pino": "^10.1.0",
     "typescript": "^5.2.2",
     "vitest": "^3.1.1",
     "yalc": "^1.0.0-pre.53"
+  },
+  "overrides": {
+    "minimatch": "^10.2.1",
+    "ajv": "^8.18.0",
+    "tar": "^7.5.8"
   }
 }
