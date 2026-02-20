@@ -40,7 +40,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@dapperduckling/oauth-monitor-common": "file:../../common",
+    "@dapperduckling/oauth-monitor-common": "^1.0.6",
     "typia": "^5.2.6"
   },
   "yalcWatch": {
@@ -48,5 +48,5 @@
     "buildWatchCommand": "tsc --watch",
     "extensions": "js,ts"
   },
-  "gitHead": "a686cd38071ba0da7bdceb7c03008e570e9de0c1"
+  "gitHead": "5f930b44d52ea884445492c1e85995c59620a542"
 }
