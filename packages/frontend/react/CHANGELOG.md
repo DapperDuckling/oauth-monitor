@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Bumped `@dapperduckling/oauth-monitor-client` peer from 1.x to 2.x
-- Bumped `@mui/material` and `@mui/icons-material` from 5.x to 9.x. Used internally by the bundled `Login`/`Logout`/`FloatingPill`/`Overlay` components; consumers using their own MUI install elsewhere are unaffected.
+- Bumped `@mui/material` and `@mui/icons-material` from 5.x to 7.x. Used internally by the bundled `Login`/`Logout`/`FloatingPill`/`Overlay` components; consumers using their own MUI install elsewhere are unaffected. (MUI v8 was skipped by upstream; v9 was held because it tightened polymorphic component types in a way that requires source changes.)
 - Bumped `immer` from 10 to 11
 - Bumped `use-immer` from 0.9 to 0.11 to match the declared peer
 

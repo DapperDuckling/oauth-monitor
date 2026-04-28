@@ -73,5 +73,5 @@
   },
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "gitHead": "5f930b44d52ea884445492c1e85995c59620a542"
+  "gitHead": "6566e150f02cec273b841c0aa849ffce36a5f776"
 }

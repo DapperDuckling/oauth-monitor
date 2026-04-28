@@ -39,8 +39,8 @@
     "@dapperduckling/oauth-monitor-common": "^2.0.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^9.0.0",
-    "@mui/material": "^9.0.0",
+    "@mui/icons-material": "^7.3.10",
+    "@mui/material": "^7.3.10",
     "immer": "^11.1.4",
     "use-immer": "^0.11.0"
   },
@@ -62,7 +62,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "5f930b44d52ea884445492c1e85995c59620a542",
+  "gitHead": "6566e150f02cec273b841c0aa849ffce36a5f776",
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
