@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `omcClient` optional field on `OauthMonitorState` so the active client is reachable from the store. The existing `getContext('oauth-monitor-client')` pattern continues to work and remains the recommended access path inside components.
+- Comprehensive vitest test suite covering store reducer transitions, `OauthMonitor` lifecycle, and all UI components
+
+### Fixed
+
+- `SET_OMC_CLIENT` action now stores the client reference on the state (was silently a no-op, divergent from the React reducer; `OauthMonitor.svelte` had been dispatching it on mount with no effect). Internal `cloneState` helper preserves the client by reference around `structuredClone`, which cannot copy class instances.
+
 ## [1.1.1] - 2025-12-06
 
 ### Fixed

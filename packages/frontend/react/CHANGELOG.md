@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Bumped `@mui/material` and `@mui/icons-material` from 5.x to 9.x. Used internally by the bundled `Login`/`Logout`/`FloatingPill`/`Overlay` components; consumers using their own MUI install elsewhere are unaffected.
+- Bumped `immer` from 10 to 11
+- Bumped `use-immer` from 0.9 to 0.11 to match the declared peer
+
+### Added
+
+- Comprehensive vitest test suite covering reducer state transitions, the `useOauthMonitor` hook, `OauthMonitorProvider` lifecycle (mount/unmount/event handling/lengthy-login timeout), and all UI components
+
 ## [1.1.1] - 2025-12-06
 
 ### Fixed
