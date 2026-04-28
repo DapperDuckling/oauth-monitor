@@ -1,6 +1,6 @@
 {
   "name": "@dapperduckling/oauth-monitor-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An opinionated library securing frontend applications without all the fuss",
   "keywords": [
     "keycloak",
@@ -42,7 +42,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@dapperduckling/oauth-monitor-common": "^1.0.7",
+    "@dapperduckling/oauth-monitor-common": "^2.0.0",
     "typia": "^12.0.2"
   },
   "yalcWatch": {
