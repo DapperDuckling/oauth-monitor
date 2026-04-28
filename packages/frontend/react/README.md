@@ -12,7 +12,7 @@ This package provides the official React implementation for OAuth Monitor, offer
 1.  **Installation:**
 
     ```bash
-    npm install @dapper-duckling/oauth-monitor-react
+    npm install @dapperduckling/oauth-monitor-react
     ```
 
 2.  **Set Up Backend Endpoints:**
@@ -20,7 +20,7 @@ This package provides the official React implementation for OAuth Monitor, offer
     For this plugin to work, you must have a backend server that is properly configured to handle authentication requests.
 
     > **Important!**
-    > For more information on how to set up the required endpoints, please refer to the [main README file on GitHub](https://github.com/dapper-duckling/oauth-monitor#backend-server-setup).
+    > For more information on how to set up the required endpoints, please refer to the [main README file on GitHub](https://github.com/dapperduckling/oauth-monitor#backend-server-setup).
 
 3.  **Wrap your application with the `OauthMonitorProvider`:**
 

@@ -12,7 +12,7 @@ This package provides a UI-agnostic client for the OAuth Monitor. It handles the
 1.  **Installation:**
 
     ```bash
-    npm install @dapper-duckling/oauth-monitor-client
+    npm install @dapperduckling/oauth-monitor-client
     ```
 
 2.  **Set Up Backend Endpoints:**
@@ -20,14 +20,14 @@ This package provides a UI-agnostic client for the OAuth Monitor. It handles the
     For this client to work, you must have a backend server that is properly configured to handle authentication requests.
 
     > **Important!**
-    > For more information on how to set up the required endpoints, please refer to the [main README file on GitHub](https://github.com/dapper-duckling/oauth-monitor#backend-server-setup).
+    > For more information on how to set up the required endpoints, please refer to the [main README file on GitHub](https://github.com/dapperduckling/oauth-monitor#backend-server-setup).
 
 3.  **Initialize and Use the Client:**
 
     The client is event-driven. You can listen for events to update your UI and application state.
 
     ```javascript
-    import { OauthMonitorClient } from '@dapper-duckling/oauth-monitor-client';
+    import { OauthMonitorClient } from '@dapperduckling/oauth-monitor-client';
 
     // Configuration for the client
     const config = {
