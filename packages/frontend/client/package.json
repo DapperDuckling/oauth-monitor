@@ -24,7 +24,9 @@
     "build": "npm run clean && tsc",
     "yalc:publish": "yalc publish --push",
     "prepublishOnly": "npm run build",
-    "prepare": "ts-patch install && typia patch"
+    "prepare": "ts-patch install && typia patch",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "ts-patch": "^3.3.0",
@@ -41,7 +43,7 @@
   },
   "dependencies": {
     "@dapperduckling/oauth-monitor-common": "^1.0.7",
-    "typia": "^5.2.6"
+    "typia": "^12.0.2"
   },
   "yalcWatch": {
     "watchFolder": "dist",

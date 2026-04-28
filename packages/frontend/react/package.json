@@ -30,21 +30,25 @@
     "build:esm": "tsc",
     "build:cjs": "tsc --module commonjs --outDir dist/cjs",
     "yalc:publish": "yalc publish --push",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@dapperduckling/oauth-monitor-client": "^1.0.12",
     "@dapperduckling/oauth-monitor-common": "^1.0.7",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.18.0",
-    "@mui/material": "^5.14.18",
-    "immer": "^10.0.3",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0",
+    "immer": "^11.1.4",
     "use-immer": "^0.11.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.2.38",
     "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^6.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "~5.9.3"

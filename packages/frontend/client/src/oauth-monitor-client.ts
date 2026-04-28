@@ -289,6 +289,7 @@ export class OauthMonitorClient {
         if (typeof window !== 'undefined') {
             window.removeEventListener("storage", this.handleStorageEvent);
             window.removeEventListener("focus", this.handleOnFocus);
+            window.removeEventListener("message", this.handleMessage);
         }
         this.isDestroyed = true;
     }

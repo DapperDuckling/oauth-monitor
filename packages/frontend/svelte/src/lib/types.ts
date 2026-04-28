@@ -8,6 +8,7 @@ export type { UserStatus } from "@dapperduckling/oauth-monitor-common";
 
 export interface OauthMonitorState {
     userStatus: UserStatus;
+    omcClient?: OauthMonitorClient;
     ui: {
         showLoginOverlay: boolean;
         showMustLoginOverlay: boolean;

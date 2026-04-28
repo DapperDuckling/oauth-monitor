@@ -66,14 +66,24 @@ const handleClientEvent = (state: OauthMonitorState, action: Extract<OauthMonito
     return state;
 };
 
+// structuredClone cannot copy class instances with methods (e.g., OauthMonitorClient).
+// Pull the client reference out, clone the rest, then re-attach by reference.
+const cloneState = (state: OauthMonitorState): OauthMonitorState => {
+    const { omcClient, ...rest } = state;
+    const cloned = structuredClone(rest) as OauthMonitorState;
+    if (omcClient) cloned.omcClient = omcClient;
+    return cloned;
+};
+
 function createReducer(state: OauthMonitorState, action: OauthMonitorStateActions): OauthMonitorState {
-    // structuredClone is available in Node 17+ and all modern browsers.
-    // If you are on an older environment, replace with JSON.parse(JSON.stringify(state))
-    const newState = structuredClone(state);
+    const newState = cloneState(state);
 
     switch (action.type) {
         case OmcDispatchType.OMC_CLIENT_EVENT:
             return handleClientEvent(newState, action);
+        case OmcDispatchType.SET_OMC_CLIENT:
+            newState.omcClient = action.payload;
+            break;
         case OmcDispatchType.LENGTHY_LOGIN:
             newState.ui.lengthyLogin = true;
             break;
