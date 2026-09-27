@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/DapperDuckling/oauth-monitor#readme",
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm --workspace @dapperduckling/oauth-monitor-common run build && npm --workspace @dapperduckling/oauth-monitor-client run build && npm --workspace @dapperduckling/oauth-monitor-react run build && npm --workspace @dapperduckling/oauth-monitor-svelte run build",
     "list-versions": "lerna ls -l",
     "test": "vitest run",
     "test:watch": "vitest",

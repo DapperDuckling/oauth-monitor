@@ -10,7 +10,6 @@ import {
 } from "../oauth-monitor-context.js";
 import {reducer} from "../reducer.js";
 import {useImmerReducer} from "use-immer";
-import {createTheme, ThemeProvider} from "@mui/material";
 import {Logout} from "./Logout.js";
 import {OmcDispatchType} from "../types.js";
 import {type EventListenerFunction, type UserStatus} from "@dapperduckling/oauth-monitor-common";
@@ -78,21 +77,6 @@ interface ConnectorProviderProps {
     },
 }
 
-const theme = createTheme({
-    palette: {
-        mode: "dark",
-        primary: { main: "#ffffff" },
-        // @ts-ignore
-        grey: { main: "#7a7a7a" },
-        darkgrey: { main: "#313131" },
-        lightgrey: { main: "#B9B9B9" },
-        lightblue: { main: "#79b4c3" },
-        white: { main: "#fff" },
-        black: { main: "#000" },
-        red: { main: "#ff0000" },
-    },
-});
-
 export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps) => {
 
     // Grab the initial context
@@ -121,7 +105,7 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
         let lengthyLoginTimeout: undefined | number = undefined;
 
         // Add event listener to pass events down to components
-        omcClient.addEventListener('*', (clientEvent, payload) => {
+        omcClient.addEventListener('*', (clientEvent: ClientEvent, payload: unknown) => {
 
             // console.debug(`KCP received event: ${clientEvent}`);
 
@@ -162,8 +146,8 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
     return (
         <OauthMonitorContext.Provider value={omcContext}>
             <OauthMonitorDispatchContext.Provider value={omcDispatch}>
-                {config.react?.disableAuthComponents !== true &&
-                    <ThemeProvider theme={theme}>
+                {config.react?.disableAuthComponents !== true && (
+                    <>
                         {omcContext.ui.showLoginOverlay && (
                             config.react?.loginModalComponent ? (
                                 <config.react.loginModalComponent {...config.react.loginModalProps} />
@@ -187,8 +171,8 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
                                 <Logout {...config.react}>{config.react?.logoutModalChildren}</Logout>
                             )
                         )}
-                    </ThemeProvider>
-                }
+                    </>
+                )}
                 {children}
             </OauthMonitorDispatchContext.Provider>
         </OauthMonitorContext.Provider>

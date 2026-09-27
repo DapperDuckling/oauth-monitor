@@ -33,7 +33,7 @@
     // Setup Event Listeners
     const setupListeners = () => {
         // Main Client Listener
-        client.addEventListener('*', (clientEvent, payload) => {
+        client.addEventListener('*', (clientEvent: ClientEvent, payload: unknown) => {
             // Dispatch to store
             const event = new CustomEvent(clientEvent, { detail: payload });
             store.dispatch({ type: OmcDispatchType.OMC_CLIENT_EVENT, payload: event });

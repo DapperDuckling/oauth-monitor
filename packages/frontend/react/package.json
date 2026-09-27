@@ -37,10 +37,6 @@
   "dependencies": {
     "@dapperduckling/oauth-monitor-client": "^2.0.2",
     "@dapperduckling/oauth-monitor-common": "^2.0.1",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^7.3.10",
-    "@mui/material": "^7.3.10",
     "immer": "^11.1.4",
     "use-immer": "^0.11.0"
   },

@@ -1,25 +1,25 @@
 
 export interface UserProfile {
-    displayName?: string;
-    name?: string;
-    email?: string;
-    preferredUsername?: string;
-    sub?: string;
-    rankCode?: string;
-    branchOfServiceCode?: string;
-    dutyOrgCode?: string;
-    company?: string;
-    department?: string;
-    roles?: string[];
-    groups?: string[];
-    claims?: Record<string, unknown>;
+    displayName?: string | undefined;
+    name?: string | undefined;
+    email?: string | undefined;
+    preferredUsername?: string | undefined;
+    sub?: string | undefined;
+    rankCode?: string | undefined;
+    branchOfServiceCode?: string | undefined;
+    dutyOrgCode?: string | undefined;
+    company?: string | undefined;
+    department?: string | undefined;
+    roles?: string[] | undefined;
+    groups?: string[] | undefined;
+    claims?: Record<string, unknown> | undefined;
 }
 
 export type UserStatus<TProfile = UserProfile> = {
     loggedIn: boolean;
     accessExpires: number;
     refreshExpires: number;
-    profile?: TProfile;
+    profile?: TProfile | undefined;
 }
 
 export enum TokenType {

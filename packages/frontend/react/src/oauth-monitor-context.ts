@@ -1,8 +1,9 @@
 import {createContext, Dispatch} from "react";
 import {OauthMonitorClient} from "@dapperduckling/oauth-monitor-client";
+import type {UserProfile} from "@dapperduckling/oauth-monitor-common";
 import type {OauthMonitorState, OauthMonitorStateActions} from "./types.js";
 
-export interface OauthMonitorContextProps extends OauthMonitorState {
+export interface OauthMonitorContextProps<TProfile = UserProfile> extends OauthMonitorState<TProfile> {
     omcClient?: OauthMonitorClient,
 }
 
@@ -24,8 +25,8 @@ export const InitialContext: OauthMonitorContextProps = {
     }
 }
 
-export const OauthMonitorContext = createContext<OauthMonitorContextProps | undefined>(undefined);
+export const OauthMonitorContext = createContext<OauthMonitorContextProps<any> | undefined>(undefined);
 OauthMonitorContext.displayName = "OauthMonitorContext";
 
-export const OauthMonitorDispatchContext = createContext<Dispatch<OauthMonitorStateActions> | undefined>(undefined);
+export const OauthMonitorDispatchContext = createContext<Dispatch<OauthMonitorStateActions<any>> | undefined>(undefined);
 OauthMonitorContext.displayName = "OauthMonitorDispatchContext";

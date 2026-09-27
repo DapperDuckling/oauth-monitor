@@ -379,7 +379,7 @@ export class OauthMonitorClient {
             }
         }
 
-        this.config.logger?.error("Validation Failed:", data);
+        this.config.logger?.error({ data }, "Validation Failed");
         // noinspection ExceptionCaughtLocallyJS
         throw new Error("Response validation failed: Invalid UserStatus shape");
     }
@@ -404,7 +404,7 @@ export class OauthMonitorClient {
                 });
             }).catch((err: unknown) => {
                 if (err instanceof Error && err.name !== 'AbortError') {
-                    this.config.logger?.error('Heartbeat leader lock failed:', err);
+                    this.config.logger?.error({ err }, 'Heartbeat leader lock failed');
                 }
             });
         } else {

@@ -1,12 +1,12 @@
 import {OauthMonitorClient} from "@dapperduckling/oauth-monitor-client";
 import {ReactNode} from "react";
-import type {UserStatus} from "@dapperduckling/oauth-monitor-common";
+import type {UserStatus, UserProfile} from "@dapperduckling/oauth-monitor-common";
 
 export interface AuthProps {
     children: ReactNode;
 }
-export interface OauthMonitorState {
-    userStatus: UserStatus;
+export interface OauthMonitorState<TProfile = UserProfile> {
+    userStatus: UserStatus<TProfile>;
     ui: {
         showLoginOverlay: boolean;
         showMustLoginOverlay: boolean;
@@ -30,9 +30,9 @@ export enum OmcDispatchType {
     HIDE_DIALOG = "HIDE_DIALOG",
 }
 
-export type OauthMonitorStateActions =
+export type OauthMonitorStateActions<TProfile = UserProfile> =
     | { type: OmcDispatchType.SET_OMC_CLIENT; payload: OauthMonitorClient; }
-    | { type: OmcDispatchType.OMC_CLIENT_EVENT; payload: Event | CustomEvent<UserStatus>; }
+    | { type: OmcDispatchType.OMC_CLIENT_EVENT; payload: Event | CustomEvent<UserStatus<TProfile>>; }
     | { type:
             OmcDispatchType.DESTROY_CLIENT |
             OmcDispatchType.LENGTHY_LOGIN |
