@@ -46,6 +46,17 @@ app.get('/oauth-monitor/user-status', (req, res) => {
     loggedIn,
     accessExpires,
     refreshExpires,
+    profile: loggedIn ? {
+      displayName: 'Duckworth, Jean-Luc CTR (USA)',
+      name: 'Duckworth, Jean-Luc CTR (USA)',
+      email: 'jeanluc.duckworth.ctr@mail.mil',
+      preferredUsername: 'jduckworth',
+      sub: 'cac-id-1234567890',
+      rankCode: 'CTR',
+      branchOfServiceCode: 'A',
+      dutyOrgCode: 'USA',
+      company: 'DapperDuckling',
+    } : undefined,
   };
   const payloadString = JSON.stringify(userStatus);
 
@@ -56,8 +67,26 @@ app.get('/oauth-monitor/user-status', (req, res) => {
   });
 });
 
+app.get('/oauth2/userinfo', (req, res) => {
+  if (!loggedIn) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  res.json({
+    sub: 'cac-id-1234567890',
+    name: 'Duckworth, Jean-Luc CTR (USA)',
+    displayName: 'Duckworth, Jean-Luc CTR (USA)',
+    email: 'jeanluc.duckworth.ctr@mail.mil',
+    preferred_username: 'jduckworth',
+    branchOfServiceCode: 'A',
+    rankCode: 'CTR',
+    dutyOrgCode: 'USA',
+    company: 'DapperDuckling',
+  });
+});
+
 app.get('/oauth-monitor/login', (req, res) => {
   loggedIn = true;
+  updateToken();
   res.send('<script>window.close();</script>');
 });
 
