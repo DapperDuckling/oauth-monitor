@@ -489,7 +489,7 @@ export class OauthMonitorClient {
         await this.authCheck(force);
     });
 
-    private static getStoredUserStatusWrapped = () => {
+    public static getStoredUserStatusWrapped = (): UserStatusWrapped | undefined => {
         if (typeof localStorage === 'undefined') return undefined;
         // Grab the user status from local storage
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

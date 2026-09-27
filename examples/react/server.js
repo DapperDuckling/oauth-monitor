@@ -13,12 +13,13 @@ let accessExpires= 0;
 let refreshExpires = 0;
 let loggedIn = true;
 
-updateToken = () => {
-  accessExpires = Date.now()/1000 + 60 * 3;
-  refreshExpires = Date.now()/1000 + 60 * 5;
-}
+const updateToken = () => {
+  accessExpires = Math.floor(Date.now() / 1000) + 60 * 3;
+  refreshExpires = Math.floor(Date.now() / 1000) + 60 * 5;
+};
 
-setInterval(updateToken , 5_000)
+updateToken();
+setInterval(updateToken, 5000);
 
 app.get('/', (req, res) => {
   res.send(`

@@ -82,6 +82,20 @@ export const OauthMonitorProvider = ({children, config}: ConnectorProviderProps)
     // Grab the initial context
     const initialContext = structuredClone(InitialContext);
 
+    // Hydrate from localStorage if valid active session exists
+    try {
+        const stored = typeof OauthMonitorClient.getStoredUserStatusWrapped === 'function'
+            ? OauthMonitorClient.getStoredUserStatusWrapped()
+            : undefined;
+        if (stored?.payload?.loggedIn && stored.payload.accessExpires > Date.now() / 1000) {
+            initialContext.userStatus = stored.payload;
+            initialContext.ui.showLoginOverlay = false;
+            initialContext.ui.showMustLoginOverlay = false;
+        }
+    } catch {
+        // Ignore storage read errors
+    }
+
     // Update for a deferred start
     if (config.react?.deferredStart) initialContext.ui.showLoginOverlay = false;
 

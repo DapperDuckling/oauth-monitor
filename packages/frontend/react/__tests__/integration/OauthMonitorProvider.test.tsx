@@ -4,6 +4,7 @@ import { render, screen, act } from '@testing-library/react';
 const { instances, MockClient } = vi.hoisted(() => {
   const arr: Array<MockClient> = [];
   class MockClient {
+    static getStoredUserStatusWrapped = vi.fn();
     config: unknown;
     listeners: Array<(event: string, payload?: unknown) => void> = [];
     start = vi.fn();

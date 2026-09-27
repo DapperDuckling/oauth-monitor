@@ -96,6 +96,8 @@ describe('reducer — ClientEvent transitions', () => {
       }),
     );
     expect(next.ui.showMustLoginOverlay).toBe(false);
+    expect(next.ui.showLoginOverlay).toBe(false);
+    expect(next.userStatus.loggedIn).toBe(true);
     expect(next.ui.silentLoginInitiated).toBe(false);
   });
 
