@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { freshClientModule } from '../helpers/freshClient.js';
-import { baseConfig } from '../helpers/factories.js';
+import { baseConfig, wrappedStatus } from '../helpers/factories.js';
 import { LocalStorage } from '../../src/types.js';
 
 describe('OauthMonitorClient login/logout navigation', () => {
@@ -131,6 +131,49 @@ describe('OauthMonitorClient login/logout navigation', () => {
         window.location.origin,
       );
       expect(closeSpy).toHaveBeenCalled();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).opener;
+    });
+
+    it('does not crash and ignores notification if opener is closed or is self', () => {
+      const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => {});
+
+      // Case 1: opener is closed
+      const mockClosedOpener = { postMessage: vi.fn(), closed: true };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).opener = mockClosedOpener;
+
+      mod.OauthMonitorClient.notifyOpenerAndClose();
+      expect(mockClosedOpener.postMessage).not.toHaveBeenCalled();
+
+      // Case 2: opener is window itself
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).opener = window;
+      mod.OauthMonitorClient.notifyOpenerAndClose();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).opener;
+    });
+
+    it('uses stored status from localStorage when no status argument passed to notifyOpenerAndClose', () => {
+      const mockOpener = { postMessage: vi.fn(), closed: false };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).opener = mockOpener;
+      vi.spyOn(window, 'close').mockImplementation(() => {});
+
+      const stored = wrappedStatus(
+        { loggedIn: true },
+        { checksum: 'stored-cs' },
+      );
+      localStorage.setItem(LocalStorage.USER_STATUS, JSON.stringify(stored));
+
+      mod.OauthMonitorClient.notifyOpenerAndClose();
+
+      expect(mockOpener.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ checksum: 'stored-cs' }),
+        window.location.origin,
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any).opener;

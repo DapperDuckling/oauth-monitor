@@ -196,6 +196,76 @@ describe('OauthMonitorClient.authCheck', () => {
       expect(stored.payload.profile.rankCode).toBe('CTR');
       c.destroy();
     });
+
+    it('constructs displayName from given_name and family_name when displayName/name are absent', async () => {
+      const rawUserinfo = {
+        sub: 'cac-id-9988',
+        given_name: 'Chester',
+        family_name: 'Nimitz',
+        email: 'nimitz.c@navy.mil',
+        branchOfServiceCode: 'N',
+        rankCode: 'ADM',
+        dutyOrgCode: 'USN',
+        customAttribute: 'FleetCommander',
+      };
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchOk(rawUserinfo));
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ userinfoMode: true }),
+      );
+
+      const endSpy = vi.fn();
+      c.addEventListener(ClientEvent.END_AUTH_CHECK, endSpy);
+
+      await c.authCheck(true);
+
+      expect(endSpy).toHaveBeenCalledWith(
+        ClientEvent.END_AUTH_CHECK,
+        expect.objectContaining({
+          loggedIn: true,
+          profile: expect.objectContaining({
+            displayName: 'Chester Nimitz',
+            name: 'Chester Nimitz',
+            branchOfServiceCode: 'N',
+            rankCode: 'ADM',
+            claims: expect.objectContaining({
+              customAttribute: 'FleetCommander',
+            }),
+          }),
+        }),
+      );
+      c.destroy();
+    });
+
+    it('handles 401 Unauthorized in userinfo mode as INVALID_TOKENS', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 }),
+      );
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ userinfoMode: true }),
+      );
+
+      const invalidSpy = vi.fn();
+      c.addEventListener(ClientEvent.INVALID_TOKENS, invalidSpy);
+
+      await c.authCheck(true);
+
+      expect(invalidSpy).toHaveBeenCalledWith(ClientEvent.INVALID_TOKENS, undefined);
+      c.destroy();
+    });
+
+    it('handles network error in userinfo mode and dispatches LOGIN_ERROR without escaping', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network failure'));
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ userinfoMode: true }),
+      );
+
+      const errSpy = vi.fn();
+      c.addEventListener(ClientEvent.LOGIN_ERROR, errSpy);
+
+      await expect(c.authCheck(true)).resolves.toBeUndefined();
+      expect(errSpy).toHaveBeenCalledWith(ClientEvent.LOGIN_ERROR, undefined);
+      c.destroy();
+    });
   });
 
   describe('Standing Heartbeat Leader via Web Locks', () => {
@@ -277,6 +347,37 @@ describe('OauthMonitorClient.authCheck', () => {
       expect(fetchSpy).not.toHaveBeenCalled();
 
       c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+
+    it('handles leader lock abort when client is destroyed', async () => {
+      let abortHandler: (() => void) | null = null;
+      const requestMock = vi.fn().mockImplementation((name, options, callback) => {
+        options.signal.addEventListener('abort', () => {
+          if (abortHandler) abortHandler();
+        });
+        return new Promise<void>((resolve) => {
+          abortHandler = resolve;
+        });
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ heartbeatInterval: 30 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(10);
+
+      // Destroy client should trigger abort on the lock signal
+      expect(abortHandler).not.toBeNull();
+      c.destroy();
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (navigator as any).locks;
     });

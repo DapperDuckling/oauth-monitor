@@ -350,9 +350,14 @@ export class OauthMonitorClient {
                     ? this.config.heartbeatInterval * 2
                     : 300;
 
+                const computedName = (typeof raw['given_name'] === 'string' || typeof raw['family_name'] === 'string')
+                    ? [raw['given_name'], raw['family_name']].filter(Boolean).join(' ')
+                    : undefined;
+                const resolvedName = (raw['displayName'] ?? raw['name'] ?? computedName) as string | undefined;
+
                 const profile = {
-                    displayName: (raw['name'] ?? raw['displayName'] ?? raw['user']) as string | undefined,
-                    name: (raw['name'] ?? raw['displayName']) as string | undefined,
+                    displayName: (resolvedName ?? raw['user'] ?? raw['preferredUsername'] ?? raw['preferred_username']) as string | undefined,
+                    name: resolvedName,
                     email: raw['email'] as string | undefined,
                     preferredUsername: (raw['preferredUsername'] ?? raw['preferred_username'] ?? raw['user']) as string | undefined,
                     sub: (raw['sub'] ?? raw['user']) as string | undefined,
