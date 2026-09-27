@@ -61,6 +61,11 @@ const handleClientEvent = (state: OauthMonitorState, action: Extract<OauthMonito
         case ClientEvent.END_AUTH_CHECK:
             state.ui.silentLoginInitiated = false;
             state.ui.showMustLoginOverlay = !detail.loggedIn;
+            if (detail.loggedIn) {
+                state.userStatus = detail;
+                state.ui.showLoginOverlay = false;
+                state.ui.hasInvalidTokens = false;
+            }
             break;
     }
     return state;

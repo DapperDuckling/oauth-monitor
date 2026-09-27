@@ -52,6 +52,8 @@ export const Overlay = (props: OverlayProps) => {
         zIndex: 1300,
     };
 
+    const defaultFontStack = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
     const cardStyle: CSSProperties = {
         position: 'relative',
         backgroundColor: '#051827',
@@ -65,7 +67,7 @@ export const Overlay = (props: OverlayProps) => {
         flexDirection: 'column',
         alignItems: 'center',
         gap: 16,
-        fontFamily: 'inherit',
+        fontFamily: defaultFontStack,
     };
 
     const closeBtnStyle: CSSProperties = {
@@ -115,6 +117,7 @@ export const Overlay = (props: OverlayProps) => {
         alignItems: 'center',
         justifyContent: 'center',
         transition: 'background-color 0.2s, opacity 0.2s',
+        fontFamily: 'inherit',
         ...buttonVariantStyle,
     };
 

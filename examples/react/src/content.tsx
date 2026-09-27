@@ -1,16 +1,19 @@
-import { useOauthMonitor, OmcDispatchType } from "@dapperduckling/oauth-monitor-react";
+import { useAuth, useOauthMonitor, OmcDispatchType } from "@dapperduckling/oauth-monitor-react";
 
 export const Content = () => {
+    // Developers can use useAuth() for high-level user info & action helpers
+    const { loggedIn, profile, refresh, client } = useAuth();
+    // Lower-level context access is also available via useOauthMonitor()
     const [omcContext, omcDispatch] = useOauthMonitor();
-    const startIfNotStarted = () => omcContext.omcClient?.isStarted() || omcContext.omcClient?.start();
+
+    const startIfNotStarted = () => client?.isStarted() || client?.start();
 
     const refreshProfile = async () => {
         console.log('forcing reauth check');
-        await omcContext.omcClient?.authCheck(true);
+        await refresh(true);
         console.log('done forcing reauth check');
     };
 
-    const profile = omcContext.userStatus.profile;
     const branchNames: Record<string, string> = {
         A: 'U.S. Army',
         N: 'U.S. Navy',
@@ -30,22 +33,24 @@ export const Content = () => {
         backgroundColor: '#1976d2',
         color: 'white',
         border: 'none',
-        borderRadius: '4px',
+        borderRadius: '6px',
         cursor: 'pointer',
         fontSize: '14px',
         fontWeight: 500,
+        fontFamily: 'inherit',
     };
 
     const cardStyle: React.CSSProperties = {
-        border: '1px solid #e0e0e0',
+        border: '1px solid #e2e8f0',
         borderRadius: '8px',
         padding: '16px',
         margin: '12px 0',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
     };
 
     return (
-        <div style={{ fontFamily: 'sans-serif', maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
+        <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
             <h1>OAuth Monitor v3 Example App</h1>
             <p style={{ color: '#666' }}>Demonstrates headless React integration, DoD CAC user profile claims, and Web Locks session coordination.</p>
 

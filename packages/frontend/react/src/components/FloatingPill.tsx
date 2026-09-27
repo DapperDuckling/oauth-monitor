@@ -26,7 +26,7 @@ export const FloatingPill = () => {
         display: 'flex',
         alignItems: 'center',
         gap: 16,
-        fontFamily: 'inherit',
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     };
 
     const buttonStyle: CSSProperties = {
@@ -39,6 +39,7 @@ export const FloatingPill = () => {
         padding: '6px 16px',
         cursor: 'pointer',
         transition: 'background-color 0.2s',
+        fontFamily: 'inherit',
     };
 
     return (
