@@ -285,12 +285,38 @@ export class OauthMonitorClient {
             // Update the user status and interface
             this.storeUserStatus(userStatusWrapped);
 
+            // If running inside an auth popup and logged in, notify opener and close
+            if (userStatusWrapped.payload.loggedIn) {
+                this.checkAndHandlePopupCloser(userStatusWrapped);
+            }
+
         } catch (error) {
             this.eventListener.dispatchEvent(ClientEvent.LOGIN_ERROR);
             this.config.logger?.debug("Auth check failed.");
         } finally {
             // Clear the abort function
             this.authCheckAbort = null;
+        }
+    }
+
+    private checkAndHandlePopupCloser = (userStatusWrapped: UserStatusWrapped) => {
+        OauthMonitorClient.notifyOpenerAndClose(userStatusWrapped);
+    }
+
+    public static notifyOpenerAndClose = (status?: UserStatusWrapped) => {
+        if (typeof window === 'undefined') return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const win = window as any;
+        if (win.opener && !win.opener.closed && win.opener !== window) {
+            const data = status ?? OauthMonitorClient.getStoredUserStatusWrapped();
+            if (data) {
+                try {
+                    win.opener.postMessage(data, window.location.origin);
+                } catch {
+                    // Suppress cross-origin restriction
+                }
+            }
+            window.close();
         }
     }
 
