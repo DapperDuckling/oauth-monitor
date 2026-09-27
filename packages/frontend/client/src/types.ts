@@ -52,6 +52,22 @@ export interface ClientConfig {
      * @default 2.5 minutes
      */
     eagerRefreshTime?: number | false;
+
+    /**
+     * @desc    Periodic heartbeat interval in seconds to poll the auth status (useful when using
+     *          oauth2-proxy /oauth2/userinfo directly). Only the elected leader tab performs
+     *          the heartbeat via Web Locks API, and it stops polling when logged out.
+     *          Set false or undefined to disable.
+     * @default undefined
+     */
+    heartbeatInterval?: number | false;
+
+    /**
+     * @desc    When true, client normalizes raw userinfo responses (e.g. from oauth2-proxy /oauth2/userinfo)
+     *          into standard UserStatusWrapped format with user profile claims.
+     * @default undefined
+     */
+    userinfoMode?: boolean;
 }
 
 export const LocalStorage = Object.freeze({

@@ -156,4 +156,129 @@ describe('OauthMonitorClient.authCheck', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     c.destroy();
   });
+
+  describe('Userinfo response normalization & CAC claims', () => {
+    it('normalizes raw oauth2-proxy /oauth2/userinfo response into UserStatusWrapped with profile', async () => {
+      const rawUserinfo = {
+        user: 'jean-luc',
+        email: 'jean-luc@example.mil',
+        preferredUsername: 'jean-luc',
+        branchOfServiceCode: 'A',
+        rankCode: 'CTR',
+        dutyOrgCode: 'USA',
+        company: 'Defense Systems',
+      };
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchOk(rawUserinfo));
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ userinfoMode: true }),
+      );
+
+      const endSpy = vi.fn();
+      c.addEventListener(ClientEvent.END_AUTH_CHECK, endSpy);
+
+      await c.authCheck(true);
+
+      expect(endSpy).toHaveBeenCalledWith(
+        ClientEvent.END_AUTH_CHECK,
+        expect.objectContaining({
+          loggedIn: true,
+          profile: expect.objectContaining({
+            email: 'jean-luc@example.mil',
+            branchOfServiceCode: 'A',
+            rankCode: 'CTR',
+            dutyOrgCode: 'USA',
+          }),
+        }),
+      );
+
+      const stored = JSON.parse(localStorage.getItem(LocalStorage.USER_STATUS)!);
+      expect(stored.payload.profile.branchOfServiceCode).toBe('A');
+      expect(stored.payload.profile.rankCode).toBe('CTR');
+      c.destroy();
+    });
+  });
+
+  describe('Standing Heartbeat Leader via Web Locks', () => {
+    it('requests omc_heartbeat_leader lock and executes periodic authCheck when logged in', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(fetchOk(wrappedStatus({ loggedIn: true })));
+
+      let lockCallback: (() => Promise<void>) | null = null;
+      const requestMock = vi.fn().mockImplementation((name, options, callback) => {
+        lockCallback = callback;
+        return callback();
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ heartbeatInterval: 60 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(10);
+      fetchSpy.mockClear();
+
+      // Put logged in status in localStorage
+      localStorage.setItem(
+        LocalStorage.USER_STATUS,
+        JSON.stringify(wrappedStatus({ loggedIn: true })),
+      );
+
+      expect(requestMock).toHaveBeenCalledWith(
+        'omc_heartbeat_leader',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        expect.any(Function),
+      );
+
+      // Advance by heartbeat interval (60 seconds)
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+      expect(fetchSpy).toHaveBeenCalled();
+
+      c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+
+    it('skips heartbeat polling when user is logged out', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(fetchOk(wrappedStatus({ loggedIn: true })));
+
+      const requestMock = vi.fn().mockImplementation((name, options, callback) => {
+        return callback();
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ heartbeatInterval: 60 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(10);
+      fetchSpy.mockClear();
+
+      // Stash logged out status in localStorage
+      localStorage.setItem(
+        LocalStorage.USER_STATUS,
+        JSON.stringify(wrappedStatus({ loggedIn: false })),
+      );
+
+      // Advance by heartbeat interval (60 seconds)
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+  });
 });

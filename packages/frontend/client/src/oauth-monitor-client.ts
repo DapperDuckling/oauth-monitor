@@ -19,11 +19,12 @@ export class OauthMonitorClient {
     private config: ClientConfig;
     private started = false;
     private isAuthCheckedWithServer = false;
-    // private isAuthChecking = false;
     private authCheckAbort: AbortController['abort'] | null = null;
     private isDestroyed = false;
     private expirationWatchTimestamp: null | number = null;
     private expirationWatchSignal: null | number = null;
+    private heartbeatIntervalSignal: number | null = null;
+    private heartbeatAbortController: AbortController | null = null;
 
     public constructor(config: ClientConfig) {
         // Store the config
@@ -53,6 +54,9 @@ export class OauthMonitorClient {
 
         // Set the auth to happen on the next tick
         this.authCheckNextTick();
+
+        // Setup standing heartbeat leader
+        this.setupHeartbeatLeader();
 
         // Set the started flag
         this.started = true;
@@ -269,13 +273,8 @@ export class OauthMonitorClient {
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const userStatusWrapped = await response.json();
-
-            if (!is<UserStatusWrapped>(userStatusWrapped)) {
-                this.config.logger?.error("Validation Failed:", userStatusWrapped);
-                // noinspection ExceptionCaughtLocallyJS
-                throw new Error("Response validation failed: Invalid UserStatus shape");
-            }
+            const responseData = await response.json();
+            const userStatusWrapped = this.normalizeUserStatus(responseData);
 
             // Advise finished auth check
             this.eventListener.dispatchEvent<UserStatus>(ClientEvent.END_AUTH_CHECK, userStatusWrapped.payload);
@@ -295,8 +294,126 @@ export class OauthMonitorClient {
         }
     }
 
+    private normalizeUserStatus = (data: unknown): UserStatusWrapped => {
+        if (is<UserStatusWrapped>(data)) {
+            return data;
+        }
+
+        if (data && typeof data === 'object') {
+            const raw = data as Record<string, unknown>;
+
+            // Check if it's already an unwrapped UserStatus
+            if (typeof raw['loggedIn'] === 'boolean' && typeof raw['accessExpires'] === 'number') {
+                return {
+                    checksum: JSON.stringify(raw),
+                    timestamp: Date.now(),
+                    payload: raw as unknown as UserStatus,
+                };
+            }
+
+            // Check if it's an oauth2-proxy userinfo response
+            const hasUserIdentifier = typeof raw['user'] === 'string' ||
+                typeof raw['email'] === 'string' ||
+                typeof raw['preferredUsername'] === 'string' ||
+                typeof raw['preferred_username'] === 'string' ||
+                typeof raw['sub'] === 'string';
+
+            if (this.config.userinfoMode || hasUserIdentifier) {
+                const nowSec = Math.floor(Date.now() / 1000);
+                const lifespan = (typeof this.config.heartbeatInterval === 'number' && this.config.heartbeatInterval > 0)
+                    ? this.config.heartbeatInterval * 2
+                    : 300;
+
+                const profile = {
+                    displayName: (raw['name'] ?? raw['displayName'] ?? raw['user']) as string | undefined,
+                    name: (raw['name'] ?? raw['displayName']) as string | undefined,
+                    email: raw['email'] as string | undefined,
+                    preferredUsername: (raw['preferredUsername'] ?? raw['preferred_username'] ?? raw['user']) as string | undefined,
+                    sub: (raw['sub'] ?? raw['user']) as string | undefined,
+                    rankCode: raw['rankCode'] as string | undefined,
+                    branchOfServiceCode: raw['branchOfServiceCode'] as string | undefined,
+                    dutyOrgCode: (raw['dutyOrgCode'] ?? raw['company']) as string | undefined,
+                    company: (raw['company'] ?? raw['dutyOrgCode']) as string | undefined,
+                    department: raw['department'] as string | undefined,
+                    roles: Array.isArray(raw['roles']) ? (raw['roles'] as string[]) : undefined,
+                    groups: Array.isArray(raw['groups']) ? (raw['groups'] as string[]) : undefined,
+                    claims: raw,
+                };
+
+                return {
+                    checksum: JSON.stringify(raw),
+                    timestamp: Date.now(),
+                    payload: {
+                        loggedIn: true,
+                        accessExpires: nowSec + lifespan,
+                        refreshExpires: nowSec + lifespan,
+                        profile,
+                    },
+                };
+            }
+        }
+
+        this.config.logger?.error("Validation Failed:", data);
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error("Response validation failed: Invalid UserStatus shape");
+    }
+
+    private setupHeartbeatLeader = () => {
+        if (!this.config.heartbeatInterval || this.config.heartbeatInterval <= 0) return;
+        if (typeof window === 'undefined') return;
+
+        this.heartbeatAbortController?.abort();
+        const abortController = new AbortController();
+        this.heartbeatAbortController = abortController;
+
+        if (typeof navigator !== 'undefined' && 'locks' in navigator && navigator.locks) {
+            navigator.locks.request('omc_heartbeat_leader', { signal: abortController.signal }, async () => {
+                this.config.logger?.debug('Elected as heartbeat leader tab');
+                this.startHeartbeatTimer();
+                return new Promise<void>((resolve) => {
+                    abortController.signal.addEventListener('abort', () => {
+                        this.stopHeartbeatTimer();
+                        resolve();
+                    });
+                });
+            }).catch((err: unknown) => {
+                if (err instanceof Error && err.name !== 'AbortError') {
+                    this.config.logger?.error('Heartbeat leader lock failed:', err);
+                }
+            });
+        } else {
+            this.startHeartbeatTimer();
+        }
+    }
+
+    private startHeartbeatTimer = () => {
+        if (!this.config.heartbeatInterval || this.config.heartbeatInterval <= 0) return;
+        if (typeof window === 'undefined') return;
+        this.stopHeartbeatTimer();
+
+        const intervalMs = this.config.heartbeatInterval * 1000;
+        this.heartbeatIntervalSignal = window.setInterval(async () => {
+            const stored = OauthMonitorClient.getStoredUserStatusWrapped();
+            if (!stored || !stored.payload.loggedIn) {
+                this.config.logger?.debug('User is not logged in, skipping heartbeat poll');
+                return;
+            }
+            this.config.logger?.debug('Heartbeat leader tab executing periodic auth check');
+            await this.authCheck(true);
+        }, intervalMs);
+    }
+
+    private stopHeartbeatTimer = () => {
+        if (this.heartbeatIntervalSignal !== null && typeof window !== 'undefined') {
+            clearInterval(this.heartbeatIntervalSignal);
+            this.heartbeatIntervalSignal = null;
+        }
+    }
+
     public destroy = () => {
         this.abortAuthCheck();
+        this.stopHeartbeatTimer();
+        this.heartbeatAbortController?.abort();
         if (typeof window !== 'undefined') {
             window.removeEventListener("storage", this.handleStorageEvent);
             window.removeEventListener("focus", this.handleOnFocus);
