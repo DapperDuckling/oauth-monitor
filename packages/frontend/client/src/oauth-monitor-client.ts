@@ -210,8 +210,19 @@ export class OauthMonitorClient {
         // Set up the expiration listener
         if (typeof window !== 'undefined') {
             this.expirationWatchSignal = window.setTimeout(async () => {
-                console.debug(`Access token expiration within ${this.config.eagerRefreshTime} minutes, eagerly fetching new token`);
-                await this.authCheck(true);
+                if (typeof navigator !== 'undefined' && 'locks' in navigator && navigator.locks) {
+                    await navigator.locks.request('omc_eager_refresh', { ifAvailable: true }, async (lock) => {
+                        if (!lock) {
+                            console.debug('Another tab is eagerly refreshing the session, skipping refresh in this tab');
+                            return;
+                        }
+                        console.debug(`Access token expiration within ${this.config.eagerRefreshTime} minutes, eagerly fetching new token`);
+                        await this.authCheck(true);
+                    });
+                } else {
+                    console.debug(`Access token expiration within ${this.config.eagerRefreshTime} minutes, eagerly fetching new token`);
+                    await this.authCheck(true);
+                }
             }, Math.max(secondsRemaining * 1000, 15000));
         }
 

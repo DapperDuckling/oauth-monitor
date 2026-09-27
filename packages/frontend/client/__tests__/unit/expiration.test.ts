@@ -136,4 +136,98 @@ describe('OauthMonitorClient expiration listener', () => {
     expect(fetchSpy).toHaveBeenCalled();
     c.destroy();
   });
+
+  describe('Web Locks API deconfliction', () => {
+    it('executes authCheck when Web Lock is granted', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response('{}', { status: 401 }));
+
+      const mockLock = { name: 'omc_eager_refresh', mode: 'exclusive' };
+      const requestMock = vi.fn().mockImplementation(async (name, options, callback) => {
+        return callback(mockLock);
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ eagerRefreshTime: 1 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(0);
+      fetchSpy.mockClear();
+
+      const access = Math.floor(Date.now() / 1000) + 3600;
+      localStorage.setItem(
+        LocalStorage.USER_STATUS,
+        JSON.stringify(
+          wrappedStatus({ accessExpires: access }, { checksum: 'cs-lock-1', timestamp: 10 }),
+        ),
+      );
+      window.dispatchEvent(
+        new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+      );
+
+      await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+      expect(requestMock).toHaveBeenCalledWith(
+        'omc_eager_refresh',
+        { ifAvailable: true },
+        expect.any(Function),
+      );
+      expect(fetchSpy).toHaveBeenCalled();
+      c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+
+    it('skips authCheck when another tab already holds the Web Lock', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response('{}', { status: 401 }));
+
+      // Simulate lock unavailable (another tab is actively refreshing)
+      const requestMock = vi.fn().mockImplementation(async (name, options, callback) => {
+        return callback(null);
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ eagerRefreshTime: 1 }),
+      );
+      c.start();
+      await vi.runAllTimersAsync();
+      fetchSpy.mockClear();
+
+      const access = Math.floor(Date.now() / 1000) + 3600;
+      localStorage.setItem(
+        LocalStorage.USER_STATUS,
+        JSON.stringify(
+          wrappedStatus({ accessExpires: access }, { checksum: 'cs-lock-2', timestamp: 11 }),
+        ),
+      );
+      window.dispatchEvent(
+        new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+      );
+
+      await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+      expect(requestMock).toHaveBeenCalledWith(
+        'omc_eager_refresh',
+        { ifAvailable: true },
+        expect.any(Function),
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
+      c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+  });
 });
