@@ -1,8 +1,25 @@
 
-export type UserStatus = {
+export interface UserProfile {
+    displayName?: string;
+    name?: string;
+    email?: string;
+    preferredUsername?: string;
+    sub?: string;
+    rankCode?: string;
+    branchOfServiceCode?: string;
+    dutyOrgCode?: string;
+    company?: string;
+    department?: string;
+    roles?: string[];
+    groups?: string[];
+    claims?: Record<string, unknown>;
+}
+
+export type UserStatus<TProfile = UserProfile> = {
     loggedIn: boolean;
     accessExpires: number;
     refreshExpires: number;
+    profile?: TProfile;
 }
 
 export enum TokenType {
@@ -10,9 +27,9 @@ export enum TokenType {
     REFRESH,
 }
 
-export type UserStatusWrapped = {
+export type UserStatusWrapped<TProfile = UserProfile> = {
     checksum: string,
-    payload: UserStatus,
+    payload: UserStatus<TProfile>,
     timestamp: number,
 }
 
