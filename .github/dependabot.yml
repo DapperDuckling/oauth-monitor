@@ -6,6 +6,6 @@ updates:
       interval: "weekly"
     exclude-paths:
       - "examples/**"
-    groups:
-      devDependencies:
-        dependency-type: "development"
+    # Only allow updates for production dependencies
+    allow:
+      - dependency-type: "production"
