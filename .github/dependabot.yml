@@ -6,6 +6,18 @@ updates:
       interval: "weekly"
     exclude-paths:
       - "examples/**"
+    open-pull-requests-limit: 1
     # Only allow updates for production dependencies
     allow:
       - dependency-type: "production"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "typia"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
