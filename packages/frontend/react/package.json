@@ -37,7 +37,7 @@
   "dependencies": {
     "@dapperduckling/oauth-monitor-client": "^3.1.0",
     "@dapperduckling/oauth-monitor-common": "^3.1.0",
-    "immer": "^11.1.4",
+    "immer": "^11.1.18",
     "use-immer": "^0.11.0"
   },
   "devDependencies": {
