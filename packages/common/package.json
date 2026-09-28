@@ -20,7 +20,7 @@
     "yalc:publish": "yalc publish --push"
   },
   "devDependencies": {
-    "typescript": "^5.0.4"
+    "typescript": "^7.0.2"
   },
   "files": [
     "dist",

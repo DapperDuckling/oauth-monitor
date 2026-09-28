@@ -55,18 +55,18 @@
     "@tailwindcss/cli": "^4.1.17"
   },
   "devDependencies": {
-    "@sveltejs/package": "^2.5.6",
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@tailwindcss/vite": "^4.2.0",
-    "@testing-library/svelte": "^5.3.1",
-    "autoprefixer": "^10.4.22",
-    "postcss": "^8.5.6",
+    "@sveltejs/package": "^2.5.8",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/svelte": "^5.4.2",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.28",
     "svelte": "^5.57.1",
-    "svelte-check": "^4.3.4",
-    "tailwindcss": "^4.1.17",
+    "svelte-check": "^4.7.6",
+    "tailwindcss": "^4.3.3",
     "tslib": "^2.8.1",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.6"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
   },
   "publishConfig": {
     "access": "public"
