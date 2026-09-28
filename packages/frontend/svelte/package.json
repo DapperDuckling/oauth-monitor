@@ -52,7 +52,7 @@
   "dependencies": {
     "@dapperduckling/oauth-monitor-client": "^3.1.0",
     "@dapperduckling/oauth-monitor-common": "^3.1.0",
-    "@tailwindcss/cli": "^4.1.17"
+    "@tailwindcss/cli": "^4.3.3"
   },
   "devDependencies": {
     "@sveltejs/package": "^2.5.6",
