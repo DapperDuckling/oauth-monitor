@@ -29,8 +29,8 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "ts-patch": "^3.3.0",
-    "typescript": "^5.4.2"
+    "ts-patch": "^4.0.1",
+    "typescript": "^7.0.2"
   },
   "files": [
     "dist",
