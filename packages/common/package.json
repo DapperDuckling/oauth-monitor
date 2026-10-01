@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "author": "DapperDuckling Dev LLC",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "type": "module",
   "bugs": {
     "url": "https://github.com/DapperDuckling/oauth-monitor/issues"

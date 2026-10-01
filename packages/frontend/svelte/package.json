@@ -10,7 +10,7 @@
     "oidc"
   ],
   "author": "DapperDuckling Dev LLC",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",

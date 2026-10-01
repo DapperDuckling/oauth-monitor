@@ -13,7 +13,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "author": "DapperDuckling Dev LLC",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
