@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { freshClientModule } from '../helpers/freshClient.js';
-import { baseConfig } from '../helpers/factories.js';
+import { baseConfig, wrappedStatus } from '../helpers/factories.js';
+import { LocalStorage } from '../../src/types.js';
 
 describe('OauthMonitorClient lifecycle', () => {
   let mod: Awaited<ReturnType<typeof freshClientModule>>;
@@ -76,5 +77,31 @@ describe('OauthMonitorClient lifecycle', () => {
     await vi.advanceTimersByTimeAsync(0);
     c.destroy();
     expect(signalCaptured?.aborted).toBe(true);
+  });
+
+  it('destroy() cancels any pending eager-refresh timer', async () => {
+    const c = mod.OauthMonitorClient.instance(
+      baseConfig({ eagerRefreshTime: 1 }),
+    );
+    c.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus({
+          loggedIn: true,
+          accessExpires: Math.floor(Date.now() / 1000) + 3600,
+        }),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    c.destroy();
+    fetchSpy.mockClear();
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

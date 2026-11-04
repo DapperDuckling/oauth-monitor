@@ -67,7 +67,17 @@ export class OauthMonitorClient {
     public addEventListener = (...args: Parameters<EventListener<ClientEvent>['addEventListener']>) => this.eventListener.addEventListener(...args);
     public removeEventListener = (...args: Parameters<EventListener<ClientEvent>['removeEventListener']>) => this.eventListener.removeEventListener(...args);
 
+    private clearExpirationListener = () => {
+        if (this.expirationWatchSignal !== null) {
+            clearTimeout(this.expirationWatchSignal);
+            this.expirationWatchSignal = null;
+        }
+        this.expirationWatchTimestamp = null;
+    }
+
     private clearUserStatus = () => {
+        this.userStatusHash = undefined;
+        this.clearExpirationListener();
         if (typeof localStorage === 'undefined') return;
         localStorage.removeItem(LocalStorage.USER_STATUS);
     }
@@ -166,6 +176,9 @@ export class OauthMonitorClient {
 
         // Check for no result
         if (userStatusWrapped === undefined) {
+            this.abortAuthCheck();
+            this.userStatusHash = undefined;
+            this.clearExpirationListener();
             this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
             return;
         }
@@ -181,6 +194,8 @@ export class OauthMonitorClient {
 
         // Check for a missing payload
         if (userStatus === undefined) {
+            this.userStatusHash = undefined;
+            this.clearExpirationListener();
             this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
             return;
         }
@@ -199,17 +214,19 @@ export class OauthMonitorClient {
         // Check if eager refresh is disabled
         if (typeof this.config.eagerRefreshTime !== "number") return;
 
+        if (!userStatus.loggedIn || userStatus.accessExpires < 0) {
+            this.clearExpirationListener();
+            return;
+        }
+
         // Check if there is already an expiration listener
         if (this.expirationWatchSignal && this.expirationWatchTimestamp === userStatus.accessExpires) return;
 
         // Abort any previous expiration listener
-        if (this.expirationWatchSignal) clearTimeout(this.expirationWatchSignal);
+        this.clearExpirationListener();
 
         // Calculate time remaining until eager refresh should occur
         const secondsRemaining = userStatus.accessExpires - Date.now()/1000 - (this.config.eagerRefreshTime * 60);
-
-        // Check if we have a negative value
-        if (userStatus.accessExpires < 0) return;
 
         // Set up the expiration listener
         if (typeof window !== 'undefined') {
@@ -238,7 +255,7 @@ export class OauthMonitorClient {
     public authCheck = async (force?: boolean) => {
 
         // Execute the synchronous auth check portion
-        if (!force && this.authCheckNoWait() && this.userStatusHash !== undefined) return;
+        if (!force && this.authCheckNoWait(true) && this.userStatusHash !== undefined) return;
 
         // Dispatch the start auth check event
         this.eventListener.dispatchEvent(ClientEvent.START_AUTH_CHECK);
@@ -258,6 +275,7 @@ export class OauthMonitorClient {
             // Check the user status
             const response = await fetch(userStatusUrl, {
                 method: "GET",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                     "credentials": "include"
@@ -267,8 +285,17 @@ export class OauthMonitorClient {
 
             // Handle 401, 403, or other non-2xx errors
             if (!response.ok) {
+                this.clearUserStatus();
                 this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
                 this.config.logger?.debug("Auth check not okay, assuming not authenticated.");
+                return;
+            }
+
+            const contentType = response.headers?.get?.("content-type")?.toLowerCase() ?? "";
+            if (contentType.includes("text/html")) {
+                this.clearUserStatus();
+                this.eventListener.dispatchEvent(ClientEvent.INVALID_TOKENS);
+                this.config.logger?.debug("Auth check returned HTML redirect, assuming not authenticated.");
                 return;
             }
 
@@ -443,6 +470,7 @@ export class OauthMonitorClient {
 
     public destroy = () => {
         this.abortAuthCheck();
+        this.clearExpirationListener();
         this.stopHeartbeatTimer();
         this.heartbeatAbortController?.abort();
         if (typeof window !== 'undefined') {
@@ -453,7 +481,7 @@ export class OauthMonitorClient {
         this.isDestroyed = true;
     }
 
-    public authCheckNoWait = () => {
+    public authCheckNoWait = (fromAuthCheck?: boolean) => {
 
         // Check for a valid access token
         if (OauthMonitorClient.isTokenCurrent(TokenType.ACCESS)) {
@@ -472,8 +500,10 @@ export class OauthMonitorClient {
         // Check for a valid refresh token
         const validRefreshToken = OauthMonitorClient.isTokenCurrent(TokenType.REFRESH);
 
-        // Perform background login
-        this.authCheckNextTick(true);
+        // Perform background login when not already inside authCheck
+        if (!fromAuthCheck) {
+            this.authCheckNextTick(true);
+        }
 
         // Check for an invalid refresh token as well
         if (!validRefreshToken) {

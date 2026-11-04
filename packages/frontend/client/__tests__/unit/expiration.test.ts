@@ -137,6 +137,166 @@ describe('OauthMonitorClient expiration listener', () => {
     c.destroy();
   });
 
+  it('cancels scheduled eager-refresh timer when an intermediate authCheck fails with 401', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () => new Response('{}', { status: 401 }));
+    const c = mod.OauthMonitorClient.instance(
+      baseConfig({ eagerRefreshTime: 1 }),
+    );
+    c.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    const access = Math.floor(Date.now() / 1000) + 3600;
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus({ accessExpires: access }, { checksum: 'cs-cancel-401', timestamp: 1 }),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    await c.authCheck(true);
+    fetchSpy.mockClear();
+
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    c.destroy();
+  });
+
+  it('resets expirationWatchTimestamp on 401 so re-login with the same accessExpires schedules a new timer', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(
+      async () => new Response('{}', { status: 401 }),
+    );
+    const c = mod.OauthMonitorClient.instance(
+      baseConfig({ eagerRefreshTime: 1 }),
+    );
+    c.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    const access = Math.floor(Date.now() / 1000) + 3600;
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus({ accessExpires: access }, { checksum: 'cs-relogin-1', timestamp: 1 }),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    await c.authCheck(true);
+
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus({ accessExpires: access }, { checksum: 'cs-relogin-2', timestamp: 2 }),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    const longTimers = setTimeoutSpy.mock.calls.filter(
+      (call) => typeof call[1] === 'number' && (call[1] as number) >= 15000,
+    );
+    expect(longTimers).toHaveLength(1);
+    c.destroy();
+  });
+
+  it('does not schedule an eager-refresh timer when loggedIn is false and cancels any existing timer', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () => new Response('{}', { status: 401 }));
+    const c = mod.OauthMonitorClient.instance(
+      baseConfig({ eagerRefreshTime: 1 }),
+    );
+    c.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    const access = Math.floor(Date.now() / 1000) + 3600;
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus(
+          { loggedIn: true, accessExpires: access },
+          { checksum: 'cs-loggedin-true', timestamp: 1 },
+        ),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus(
+          { loggedIn: false, accessExpires: access + 600 },
+          { checksum: 'cs-loggedin-false', timestamp: 2 },
+        ),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    const longTimers = setTimeoutSpy.mock.calls.filter(
+      (call) => typeof call[1] === 'number' && (call[1] as number) >= 15000,
+    );
+    expect(longTimers).toHaveLength(0);
+
+    fetchSpy.mockClear();
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    c.destroy();
+  });
+
+  it('cancels scheduled eager-refresh timer on handleLogout()', async () => {
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      configurable: true,
+      value: { ...originalLocation, href: originalLocation.href },
+    });
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () => new Response('{}', { status: 401 }));
+    const c = mod.OauthMonitorClient.instance(
+      baseConfig({ eagerRefreshTime: 1 }),
+    );
+    c.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    const access = Math.floor(Date.now() / 1000) + 3600;
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus({ accessExpires: access }, { checksum: 'cs-logout', timestamp: 1 }),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+
+    c.handleLogout();
+    fetchSpy.mockClear();
+
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    c.destroy();
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
   describe('Web Locks API deconfliction', () => {
     it('executes authCheck when Web Lock is granted', async () => {
       const fetchSpy = vi

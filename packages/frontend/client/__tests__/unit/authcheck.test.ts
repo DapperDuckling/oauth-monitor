@@ -34,7 +34,11 @@ describe('OauthMonitorClient.authCheck', () => {
     c.destroy();
   });
 
-  it('401: dispatches INVALID_TOKENS without storing', async () => {
+  it('401: dispatches INVALID_TOKENS and clears stored user status', async () => {
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(wrappedStatus({ loggedIn: true })),
+    );
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchStatus(401));
     const c = mod.OauthMonitorClient.instance(baseConfig());
     const invalid = vi.fn();
@@ -46,7 +50,11 @@ describe('OauthMonitorClient.authCheck', () => {
     c.destroy();
   });
 
-  it('403: dispatches INVALID_TOKENS', async () => {
+  it('403: dispatches INVALID_TOKENS and clears stored user status', async () => {
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(wrappedStatus({ loggedIn: true })),
+    );
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchStatus(403));
     const c = mod.OauthMonitorClient.instance(baseConfig());
     const invalid = vi.fn();
@@ -54,10 +62,15 @@ describe('OauthMonitorClient.authCheck', () => {
 
     await c.authCheck(true);
     expect(invalid).toHaveBeenCalled();
+    expect(localStorage.getItem(LocalStorage.USER_STATUS)).toBeNull();
     c.destroy();
   });
 
-  it('500: dispatches INVALID_TOKENS', async () => {
+  it('500: dispatches INVALID_TOKENS and clears stored user status', async () => {
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(wrappedStatus({ loggedIn: true })),
+    );
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(fetchStatus(500));
     const c = mod.OauthMonitorClient.instance(baseConfig());
     const invalid = vi.fn();
@@ -65,6 +78,31 @@ describe('OauthMonitorClient.authCheck', () => {
 
     await c.authCheck(true);
     expect(invalid).toHaveBeenCalled();
+    expect(localStorage.getItem(LocalStorage.USER_STATUS)).toBeNull();
+    c.destroy();
+  });
+
+  it('200 + text/html login redirect: dispatches INVALID_TOKENS (not LOGIN_ERROR) and clears stored user status', async () => {
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(wrappedStatus({ loggedIn: true })),
+    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('<!doctype html><html><body>Login</body></html>', {
+        status: 200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      }),
+    );
+    const c = mod.OauthMonitorClient.instance(baseConfig());
+    const invalid = vi.fn();
+    const loginErr = vi.fn();
+    c.addEventListener(ClientEvent.INVALID_TOKENS, invalid);
+    c.addEventListener(ClientEvent.LOGIN_ERROR, loginErr);
+
+    await c.authCheck(true);
+    expect(invalid).toHaveBeenCalled();
+    expect(loginErr).not.toHaveBeenCalled();
+    expect(localStorage.getItem(LocalStorage.USER_STATUS)).toBeNull();
     c.destroy();
   });
 
@@ -135,9 +173,9 @@ describe('OauthMonitorClient.authCheck', () => {
       'http://api.test/oauth-monitor/me',
       expect.objectContaining({
         method: 'GET',
+        credentials: 'include',
         headers: expect.objectContaining({
           'Content-Type': 'application/json',
-          credentials: 'include',
         }),
         signal: expect.any(AbortSignal),
       }),
@@ -378,6 +416,157 @@ describe('OauthMonitorClient.authCheck', () => {
       expect(abortHandler).not.toBeNull();
       c.destroy();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+
+    it('stops polling after 401 session expiry', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(
+          fetchOk(wrappedStatus({ loggedIn: true }, { checksum: 'session-1', timestamp: 1000 })),
+        );
+
+      const requestMock = vi.fn().mockImplementation((_name, _options, callback) => {
+        return callback();
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ heartbeatInterval: 60 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(10);
+
+      expect(localStorage.getItem(LocalStorage.USER_STATUS)).not.toBeNull();
+
+      const invalidSpy = vi.fn();
+      c.addEventListener(ClientEvent.INVALID_TOKENS, invalidSpy);
+
+      fetchSpy.mockClear();
+      fetchSpy.mockResolvedValue(fetchStatus(401));
+
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(invalidSpy).toHaveBeenCalled();
+      expect(localStorage.getItem(LocalStorage.USER_STATUS)).toBeNull();
+
+      fetchSpy.mockClear();
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+
+    it('stops polling after 200 OK HTML redirect on heartbeat', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(
+          fetchOk(wrappedStatus({ loggedIn: true }, { checksum: 'session-1', timestamp: 1000 })),
+        );
+
+      const requestMock = vi.fn().mockImplementation((_name, _options, callback) => {
+        return callback();
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ heartbeatInterval: 60 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(10);
+
+      expect(localStorage.getItem(LocalStorage.USER_STATUS)).not.toBeNull();
+
+      const invalidSpy = vi.fn();
+      c.addEventListener(ClientEvent.INVALID_TOKENS, invalidSpy);
+
+      fetchSpy.mockClear();
+      fetchSpy.mockResolvedValue(
+        new Response('<!doctype html><html><body>Login</body></html>', {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' },
+        }),
+      );
+
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(invalidSpy).toHaveBeenCalled();
+      expect(localStorage.getItem(LocalStorage.USER_STATUS)).toBeNull();
+
+      fetchSpy.mockClear();
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      c.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (navigator as any).locks;
+    });
+
+    it('resumes heartbeat polling and dispatches USER_STATUS_UPDATED on re-login even if checksum matches pre-expiry session', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(
+          fetchOk(wrappedStatus({ loggedIn: true }, { checksum: 'same-cs', timestamp: 1000 })),
+        );
+
+      const requestMock = vi.fn().mockImplementation((_name, _options, callback) => {
+        return callback();
+      });
+
+      Object.defineProperty(navigator, 'locks', {
+        value: { request: requestMock },
+        configurable: true,
+        writable: true,
+      });
+
+      const c = mod.OauthMonitorClient.instance(
+        baseConfig({ heartbeatInterval: 60 }),
+      );
+      c.start();
+      await vi.advanceTimersByTimeAsync(10);
+
+      expect(localStorage.getItem(LocalStorage.USER_STATUS)).not.toBeNull();
+
+      fetchSpy.mockResolvedValue(fetchStatus(401));
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+      expect(localStorage.getItem(LocalStorage.USER_STATUS)).toBeNull();
+
+      const updatedSpy = vi.fn();
+      c.addEventListener(ClientEvent.USER_STATUS_UPDATED, updatedSpy);
+
+      fetchSpy.mockImplementation(() =>
+        Promise.resolve(
+          fetchOk(wrappedStatus({ loggedIn: true }, { checksum: 'same-cs', timestamp: 2000 })),
+        ),
+      );
+
+      await c.authCheck(true);
+      expect(updatedSpy).toHaveBeenCalledWith(
+        ClientEvent.USER_STATUS_UPDATED,
+        expect.objectContaining({ loggedIn: true }),
+      );
+      expect(
+        JSON.parse(localStorage.getItem(LocalStorage.USER_STATUS)!).payload.loggedIn,
+      ).toBe(true);
+
+      fetchSpy.mockClear();
+      await vi.advanceTimersByTimeAsync(60 * 1000);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+      c.destroy();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (navigator as any).locks;
     });

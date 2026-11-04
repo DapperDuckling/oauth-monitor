@@ -146,4 +146,58 @@ describe('OauthMonitorClient window events', () => {
     expect(listener).not.toHaveBeenCalled();
     c.destroy();
   });
+
+  it('storage removal event cancels pending eager-refresh timer and resets userStatusHash for re-login', async () => {
+    const fetchSpy = vi.mocked(globalThis.fetch);
+    const c = mod.OauthMonitorClient.instance(
+      baseConfig({ eagerRefreshTime: 1 }),
+    );
+    c.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    const updatedListener = vi.fn();
+    const invalidListener = vi.fn();
+    c.addEventListener(ClientEvent.USER_STATUS_UPDATED, updatedListener);
+    c.addEventListener(ClientEvent.INVALID_TOKENS, invalidListener);
+
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus(
+          { loggedIn: true, accessExpires: Math.floor(Date.now() / 1000) + 3600 },
+          { checksum: 'cs-tab-sync', timestamp: 100 },
+        ),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+    expect(updatedListener).toHaveBeenCalledOnce();
+
+    localStorage.removeItem(LocalStorage.USER_STATUS);
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS, newValue: null }),
+    );
+    expect(invalidListener).toHaveBeenCalledOnce();
+
+    fetchSpy.mockClear();
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    updatedListener.mockClear();
+    localStorage.setItem(
+      LocalStorage.USER_STATUS,
+      JSON.stringify(
+        wrappedStatus(
+          { loggedIn: true, accessExpires: Math.floor(Date.now() / 1000) + 3600 },
+          { checksum: 'cs-tab-sync', timestamp: 200 },
+        ),
+      ),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: LocalStorage.USER_STATUS }),
+    );
+    expect(updatedListener).toHaveBeenCalledOnce();
+    c.destroy();
+  });
 });
